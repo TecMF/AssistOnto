@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block header %}
+<h1>{% block title %}{{what}}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{% if long_message is defined %}
+<div class="emphasis-darker">
+  {{long_message}}
+</div>
+{% endif %}
+{% endblock %}

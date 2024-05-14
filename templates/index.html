@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block header %}
+<h1>{% block title %}Home{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<p>AI assists you in ontology building and query.</p>
+<p>Start now by <a href="{{url_for('view_register')}}">creating an account</a>.</p>
+{% endblock %}

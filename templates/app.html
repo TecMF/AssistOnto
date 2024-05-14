@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="flex">
+  <div id="ai-chat" class="flex">
+    <div id="messages"></div>
+    <textarea id="userInput" name="user_message">…</textarea>
+    <button hx-post="{{url_for('message_new')}}"
+            hx-trigger="click"
+            hx-include="previous #userInput"
+            hx-target="#messages"
+            hx-swap="beforeend"
+            >
+      ➢
+    </button> <!-- use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
+  </div>
+  <div id="ontology-editor">
+    <!-- industrial grade options: ace editor, monaco, codejar, codemirror 6 -->
+    <textarea id="ontology">
+# Your ontology goes here
+    </textarea>
+  </div>
+</main>
+{% endblock %}

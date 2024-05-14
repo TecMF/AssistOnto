@@ -1,0 +1,36 @@
+.flex {
+    display: flex;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+div#ai-chat {
+    flex: 55%;
+    flex-direction: column;
+}
+
+div#messages {
+    width: 95%;
+}
+
+#userInput {
+    width: 90%;
+    justify-self: end;
+    max-height: 7em;
+}
+
+div#ontology-editor {
+    flex: 50%;
+}
+
+textarea#ontology {
+    height: 95vh;
+    width: 95%;
+}
+
+textarea {
+    resize: none;
+    overflow: auto;
+}

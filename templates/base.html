@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIssist — {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+    <script src="{{url_for('static', filename='htmx.min.js')}}"></script>
+  </head>
+  <body>
+    <nav class="nopadding nomargin borderbox">
+      <ul class="nobullet flex-row em-gap flex-justify-end sm-margin">
+        <li class="item-push-left">
+          <a class="no-decor sm-padding" href="{{ url_for('index') }}">
+            AIssist
+          </a>
+        </li>
+        {% if g._user_id|default(None) is none %}
+        <li>
+          <a class="no-decor sm-padding" href="{{url_for('view_login')}}">
+            Log In
+          </a>
+        </li>
+        <li>
+          <a class="no-decor sm-padding" href="{{url_for('view_register')}}">
+            Register
+          </a>
+        </li>
+        {% else %}
+        <li>
+          <a class="no-decor sm-padding" href="{{ url_for('view_app') }}">
+            App
+          </a>
+        <li>
+          <a class="no-decor sm-padding" href="{{url_for('logout')}}">
+            Log Out
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% if header %}
+    <header class="flex">
+      {% block header %}{% endblock %}
+    </header>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    <section>
+      <ul class="nobullet">
+        {% for (cat, message) in messages %}
+        <li {% if cat in ['warning', 'error'] %}class="emphasis-darker"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+    {% endwith %}
+
+    <section class="content">{% block content %}{% endblock %}</section>
+  </body>
+</html>
