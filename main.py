@@ -4,9 +4,9 @@ import sys
 
 if __name__ == "__main__":
     # define parser for command line arguments
-    parser = argparse.ArgumentParser(description="AIssist")
+    parser = argparse.ArgumentParser(description="AssistOnto")
     subparsers = parser.add_subparsers()
-    parser_server = subparsers.add_parser('server', help="Start up AIssist web interface")
+    parser_server = subparsers.add_parser('server', help="Start up AssistOnto web interface")
     parser_server.add_argument("--db-path", metavar="DBPATH", help="Path to SQLite database file storing application data", type=str)
     parser_server.add_argument("--host", metavar="HOST", help="Host address", type=str)
     parser_server.add_argument("--port", metavar="PORT", help="Port to listen to", type=int)

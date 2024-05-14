@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIssist — {% block title %}{% endblock %}</title>
+    <title>AssistOnto — {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
     <script src="{{url_for('static', filename='htmx.min.js')}}"></script>
   </head>
@@ -12,7 +12,7 @@
       <ul class="nobullet flex-row em-gap flex-justify-end sm-margin">
         <li class="item-push-left">
           <a class="no-decor sm-padding" href="{{ url_for('index') }}">
-            AIssist
+            AssistOnto
           </a>
         </li>
         {% if g._user_id|default(None) is none %}

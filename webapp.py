@@ -4,6 +4,7 @@ from uuid import uuid4
 from functools import wraps
 # to increase password security
 from werkzeug.security import generate_password_hash, check_password_hash
+from openai import OpenAI
 import os
 import sqlite3
 import secrets
@@ -183,16 +184,21 @@ def message_new():
     if user_message is None:
         return "" # no HTML response
     # get answer from AI
-    # TODO: get answer from AI
-    ## TODO: break it into paragraphs <p>
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            # TODO: include ontology in system message?
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": user_message}
-        ]
-    )
+    # # TODO: get answer from AI https://platform.openai.com/docs/api-reference/chat/create
+    # # TODO: break it into paragraphs <p>
+
+    # TODO: store client in session data
+    # client = OpenAI()
+    # response = client.chat.completions.create(
+    #     model="gpt-3.5-turbo",
+    #     messages=[
+    #         # TODO: include ontology in system message?
+    #         {"role": "system", "content": "You are a helpful assistant."},
+    #         {"role": "user", "content": user_message}
+    #     ]
+    # )
+    # # TODO: check if response was ok
+    # assistant_message = response.choices[0].message
     assistant_message = 'The answer to life, the universe, and everything is… 42.'
     # TODO: include user message client-side
     return render_template("message.html", username=g._username, user_message=user_message, ainame="AI", assistant_message=assistant_message)
@@ -217,8 +223,10 @@ def start_webapp(host=None, port=None, debug_mode=None, db_path=None):
     if port is None:
         port = 8888
     if debug_mode is None:
-        debug_mode = True
+      # INFO: this is to debug the server; to debug openai library
+      # we can set the environment variable OPENAI_LOG=debug
+      debug_mode = True
     if db_path is None:
-        db_path = 'aissist.db'
+        db_path = 'assistonto.db'
     DATABASE = db_path
     app.run(host=host, port=port, debug=debug_mode)

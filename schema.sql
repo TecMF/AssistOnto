@@ -8,4 +8,4 @@ CREATE TABLE users (
   password TEXT NOT NULL
 ) STRICT;
 
-.save aissist.db
+.save assistonto.db
