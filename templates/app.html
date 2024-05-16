@@ -1,22 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main class="flex">
-  <div id="ai-chat" class="flex">
-    <div id="messages"></div>
-    <textarea id="userInput" name="user_message">…</textarea>
-    <button hx-post="{{url_for('message_new')}}"
+<script defer="true" src="{{url_for('static', filename='main.js')}}" type="text/javascript"></script>
+<main class="flex-row">
+  <div id="ai-chat" class="flex-column">
+    <div id="messages" class="flex-column">{% include 'next_user_message.html' %}</div>
+    <textarea id="userInput"
+              name="user_message"
+              placeholder="Message assistant"></textarea>
+    <button id="userInputButton"
+            hx-post="{{url_for('message_new')}}"
             hx-trigger="click"
             hx-include="previous #userInput"
             hx-target="#messages"
             hx-swap="beforeend"
             >
       ➢
-    </button> <!-- use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
+    </button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
   </div>
   <div id="ontology-editor">
-    <!-- industrial grade options: ace editor, monaco, codejar, codemirror 6 -->
-    <textarea id="ontology">
+    <!-- TODO: industrial grade options: ace editor, monaco, codejar, codemirror 6 -->
+    <textarea id="ontology" name="user_ontology" data-changed="false">
 # Your ontology goes here
     </textarea>
   </div>
