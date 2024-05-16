@@ -88,6 +88,8 @@ def login_required(f):
 
 @app.route('/login', methods=['GET'])
 def view_login():
+  if session.get(USER_SESSION_KEY) is not None:
+    return redirect(url_for('view_app'))
   return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
@@ -160,6 +162,8 @@ def logout():
 
 @app.route("/", methods=["GET"])
 def index():
+  if session.get(USER_SESSION_KEY) is not None:
+    return redirect(url_for('view_app'))
   return render_template("index.html")
 
 @app.route('/app', methods=["GET"])
