@@ -1,18 +1,31 @@
-.flex {
-    display: flex;
+:root {
+  --color-background: #fafafa;
+  --color-text: #16161d;
+  --color-emphasis-darker: maroon;
 }
 
-.font-semibold {
-    font-weight: 600;
+body {
+    margin-left: auto;
+    margin-right: auto;
+    color: var(--color-text);
+    background-color: var(--color-background);
 }
 
 div#ai-chat {
     flex: 55%;
-    flex-direction: column;
 }
 
 div#messages {
     width: 95%;
+}
+
+div#nextUserMessage {
+    /* make next message skeleton invisible */
+    display: none;
+}
+
+div#messages > div[data-role="user"] {
+    align-self: end;
 }
 
 #userInput {
@@ -33,4 +46,46 @@ textarea#ontology {
 textarea {
     resize: none;
     overflow: auto;
+}
+
+.nomargin {
+    margin: 0;
+}
+
+.auto-margin-right {
+    margin-right: auto;
+}
+
+.nobullet {
+  list-style-type: none;
+}
+
+.nodecor {
+    text-decoration: none;
+}
+
+.sm-padding {
+    padding: 0.2em 0.55em;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.borderbox {
+    box-sizing: border-box;
+}
+
+.gap1em {
+    gap: 1em;
 }
