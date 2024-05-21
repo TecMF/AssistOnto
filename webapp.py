@@ -10,7 +10,7 @@ import sqlite3
 import secrets
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 #### Database
 
@@ -45,6 +45,7 @@ def close_connection(exception):
 #### Authentication
 
 USER_SESSION_KEY = 'USERNAME'
+AI_CLIENT_KEY = 'AICLIENT'
 
 def login_and_redirect(username, next_url=''):
   ## CAUTION: only call this function after verifying user
@@ -174,7 +175,7 @@ def view_app():
 @app.route('/messaged', methods=["POST"])
 @login_required
 def message_new():
-  # add message to session
+  # # TODO: add message to session
   # db = get_db()
   #   cur = db.execute("""INSERT INTO groups(name, description)
   # VALUES (:name, :description)
@@ -188,24 +189,38 @@ def message_new():
   if user_message is None:
     return "" # no HTML response
   # get answer from AI
-  # # TODO: get answer from AI https://platform.openai.com/docs/api-reference/chat/create
   # # TODO: break it into paragraphs <p>
-
+  ontology = request.form.get('ontology', None)
   # TODO: store client in session data
-  # client = OpenAI()
-  # response = client.chat.completions.create(
-  #     model="gpt-3.5-turbo",
-  #     messages=[
-  #         # TODO: include ontology in system message?
-  #         {"role": "system", "content": "You are a helpful assistant."},
-  #         {"role": "user", "content": user_message}
-  #     ]
-  # )
-  # # TODO: check if response was ok
-  # assistant_message = response.choices[0].message
-  assistant_message = 'The answer to life, the universe, and everything is… 42.'
-  # TODO: include user message client-side
-  return render_template("message.html", username=g._username, user_message=user_message, ainame="AI", assistant_message=assistant_message)
+  client = session.get(AI_CLIENT_KEY)
+  if client is None:
+    api_key = os.environ.get("OPENAI_API_KEY", None)
+    if api_key is None:
+      flash("No API key means we can't contact the assistant.", category='error')
+      return "", 500
+    client = OpenAI(api_key=api_key)
+    del api_key
+  ontology_message = f"The user ontology is:\n{ontology}" if ontology is not None else ""
+  messages = [
+    dict(role="system", content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""),
+    dict(role="user", content=user_message)
+  ]
+  response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[m for m in messages if m is not None],
+    max_tokens=2000
+  )
+  # TODO: check if response was ok
+  assistant_message = response.choices[0].message.content
+  # TODO: get formatted output. For this apparently the best way is
+  # to ask for markdown and then convert to HTML (using a library
+  # that treats markdown as unsafe, i.e., removes any HTML tags and
+  # stuff)
+  return render_template(
+    "message.html",
+    ainame="AI", # TODO: include AI name when we have more options
+    assistant_message=assistant_message
+  )
 
 class NotAuthorized(Exception):
   "Raised when the user does not have the authority to perform some action"
