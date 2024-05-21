@@ -15,6 +15,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 #### Database
 
 DATABASE = None
+MAX_MESSAGES_SHOWN = 100
 
 def db_query_db(db, query, args=(), one=False):
   cur = db.execute(query, args)
@@ -45,7 +46,7 @@ def close_connection(exception):
 #### Authentication
 
 USER_SESSION_KEY = 'USERNAME'
-AI_CLIENT_KEY = 'AICLIENT'
+USER_CHAT_KEY = 'USERCHAT'
 
 def login_and_redirect(username, next_url=''):
   ## CAUTION: only call this function after verifying user
@@ -167,51 +168,128 @@ def index():
     return redirect(url_for('view_app'))
   return render_template("index.html")
 
-@app.route('/app', methods=["GET"])
+@app.route('/chat', methods=["GET"])
+@app.route('/chat/<int:chat_id>', methods=["GET"])
 @login_required
-def view_app():
-  return render_template("app.html", username=g._username)
+def view_app(chat_id=None):
+  db = get_db()
+  user_chats = db_query_db(
+      db,
+      """SELECT id, subject
+FROM chats
+WHERE user_id = :user_id""",
+      dict(user_id=g._user_id)
+    )
+  if chat_id is None or chat_id not in [chat['id'] for chat in user_chats]:
+    # No chat specified or unauthorized chat (not owned by user), so
+    # get latest chat id, if any
+    chat_id = db_query_db(
+      db,
+      """SELECT chat_id
+FROM messages INNER JOIN chats ON messages.chat_id = chats.id
+WHERE user_id = :user_id
+ORDER BY tstamp DESC
+LIMIT 1""",
+      dict(user_id=g._user_id),
+      one = True
+    )['chat_id']
+    if chat_id is None:
+      # if no chat, create one
+      chat_id = chat_new_chat(user_id, db=db)
+  session[USER_CHAT_KEY] = chat_id
+  chat_messages = chat_get_context(chat_id, ncontext=MAX_MESSAGES_SHOWN)
+  return render_template(
+    "app.html",
+    username=g._username,
+    chat_messages=chat_messages,
+    user_chats=user_chats
+  )
+
+def chat_new_chat(user_id, subject=None, db=None):
+  if db is None:
+    db = get_db()
+  res = db_query_db(
+    db,
+    """INSERT INTO chats(user_id, subject)
+  VALUES (:user_id, :subject)
+  RETURNING id AS chat_id""",
+    dict(user_id=user_id, subject=subject),
+    one=True)
+  if res is None:
+    db.rollback()
+  else:
+    db.commit()
+    chat_id = res.chat_id
+    return chat_id
+
+def chat_insert_message(chat_id, role, content, db=None):
+  if db is None:
+    db = get_db()
+  res = db_query_db(
+    db,
+    """INSERT INTO messages(chat_id, user_msg, content, tstamp)
+  VALUES (:chat_id, :user_msg, :content, unixepoch())
+  RETURNING id AS message_id""",
+    dict(chat_id=chat_id, user_msg=(role == "user"), content=content),
+    one=True)
+  if res is None:
+    db.rollback()
+  else:
+    db.commit()
+    message_id = res['message_id']
+    return message_id
+
+def chat_get_context(chat_id, ncontext=3, db=None):
+  if db is None:
+    db = get_db()
+  res = db_query_db(
+    db,
+    """SELECT content, user_msg
+FROM messages
+WHERE chat_id = :chat_id
+ORDER BY tstamp DESC
+LIMIT :ncontext""",
+    dict(chat_id=chat_id, ncontext=ncontext))
+  return reversed(res)
 
 @app.route('/messaged', methods=["POST"])
 @login_required
 def message_new():
-  # # TODO: add message to session
-  # db = get_db()
-  #   cur = db.execute("""INSERT INTO groups(name, description)
-  # VALUES (:name, :description)
-  # RETURNING id AS group_id""",
-  #           {'name': name, 'description': description})
-  #   res = cur.fetchone()
-  #   if res is not None:
-  #     group_id = res['group_id']
-  #db.commit()
   user_message = request.form.get('user_message', None)
   if user_message is None:
     return "" # no HTML response
+  chat_id = session.get(USER_CHAT_KEY)
+  if chat_id is None:
+    return redirect(url_for('view_app'))
+  db = get_db()
+  _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
   # # TODO: break it into paragraphs <p>
-  ontology = request.form.get('ontology', None)
-  # TODO: store client in session data
-  client = session.get(AI_CLIENT_KEY)
-  if client is None:
-    api_key = os.environ.get("OPENAI_API_KEY", None)
-    if api_key is None:
-      flash("No API key means we can't contact the assistant.", category='error')
-      return "", 500
-    client = OpenAI(api_key=api_key)
-    del api_key
-  ontology_message = f"The user ontology is:\n{ontology}" if ontology is not None else ""
+  api_key = os.environ.get("OPENAI_API_KEY", None)
+  if api_key is None:
+    flash("No API key means we can't contact the assistant.", category='error')
+    return "", 500
+  client = OpenAI(api_key=api_key)
+  del api_key
+  context_messages = chat_get_context(chat_id, ncontext=3, db=db)
   messages = [
-    dict(role="system", content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""),
-    dict(role="user", content=user_message)
+    dict(role="user" if usr_msg == 1 else "assistant", content=content)
+    for (content, usr_msg) in context_messages
   ]
+  ontology = request.form.get('ontology', None)
+  ontology_message = f"The current ontology is:\n{ontology}" if ontology is not None else ""
+  system_msg = dict(
+    role="system",
+    content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
+  messages.append(system_msg)
   response = client.chat.completions.create(
     model="gpt-3.5-turbo",
-    messages=[m for m in messages if m is not None],
+    messages=messages,
     max_tokens=2000
   )
   # TODO: check if response was ok
   assistant_message = response.choices[0].message.content
+  _ = chat_insert_message(chat_id, "assistant", assistant_message)
   # TODO: get formatted output. For this apparently the best way is
   # to ask for markdown and then convert to HTML (using a library
   # that treats markdown as unsafe, i.e., removes any HTML tags and

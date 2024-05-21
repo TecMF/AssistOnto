@@ -1,22 +1,51 @@
 :root {
-  --color-background: #fafafa;
-  --color-text: #16161d;
-  --color-emphasis-darker: maroon;
+    --color-background: #fafafa;
+    --color-pair: lightgray;
+    --color-text: #16161d;
+    --color-emphasis-darker: maroon;
+    --input-border: #8b8a8b;
+    --input-focus-h: 245;
+    --input-focus-s: 100%;
+    --input-focus-l: 42%;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 body {
-    margin-left: auto;
-    margin-right: auto;
+    margin-inline: auto;
+    min-height: 100vh;
     color: var(--color-text);
     background-color: var(--color-background);
+    font-size: min(22px, max(16px, 2.4vw));
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+
 }
 
 div#ai-chat {
     flex: 55%;
+    margin: 1em;
 }
 
 div#messages {
     width: 95%;
+    margin: 1em;
+}
+
+div#messages > div {
+  padding: 0.4em;
+}
+
+div#messages > div[data-role="user"] {
+    align-self: end;
+    margin-left: 2em;
+    width: fit-content;
+    background-color: var(--color-pair);
+    border-radius: 0.3em;
 }
 
 div#nextUserMessage {
@@ -24,14 +53,11 @@ div#nextUserMessage {
     display: none;
 }
 
-div#messages > div[data-role="user"] {
-    align-self: end;
-}
-
 #userInput {
     width: 90%;
     justify-self: end;
     max-height: 7em;
+    margin-right: 0.5em;
 }
 
 div#ontology-editor {
@@ -88,4 +114,59 @@ textarea {
 
 .gap1em {
     gap: 1em;
+}
+
+button.button {
+    border: none;
+    background-color: var(--color-pair);
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.3em;
+    padding: 0.25em 0.75em;
+    min-width: 10ch;
+    width: fit-content;
+    min-height: 44px;
+    text-align: center;
+    line-height: 1.1;
+
+    @media screen and (-ms-high-contrast: active) {
+        /* windows high-contrast mode shenanigans */
+        border: 2px solid currentcolor;
+    }
+}
+
+.input {
+    font-size: inherit;
+    padding: 0.25em 0.5em;
+    background-color: #fff;
+    border: 2px solid var(--input-border);
+    border-radius: 4px;
+    transition: 180ms box-shadow ease-in-out;
+}
+
+.input:not(textarea) {
+    line-height: 1;
+    height: 2.25rem;
+}
+
+.input:focus {
+    border-color: hsl(var(--input-focus-h), var(--input-focus-s), var(--input-focus-l));
+    box-shadow: 0 0 0 3px hsla(var(--input-focus-h), var(--input-focus-s), calc(var(--input-focus-l) + 40%), 0.8);
+}
+
+p,
+li,
+h1,
+h2,
+h3,
+h4 {
+    /* Help prevent overflow of long words/names/URLs */
+    overflow-wrap: break-word;
+
+    /* Optional, not supported for all languages */
+    hyphens: auto;
 }

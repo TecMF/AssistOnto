@@ -6,15 +6,16 @@
 
 {% block content %}
 <form method="POST" action="{{url_for('post_login')}}">
-  <label>Username:</label>
-  <input class="block" type="text" name="input-username" minlength="6">
-
-  <label>Password:</label>
-  <input class="block" type="password" name="input-password" minlength="6">
-
-  <input class="block" type="hidden" name="next-url" value="{{ request.args.get('next', '') }}"/>
-
-  <button class="block" type="submit">Log In</button>
+  <div>
+    <label>Username:</label>
+    <input class="input" type="text" name="input-username" minlength="6">
+  </div>
+  <div>
+    <label>Password:</label>
+    <input class="input" type="password" name="input-password" minlength="6">
+  </div>
+  <input type="hidden" name="next-url" value="{{ request.args.get('next', '') }}"/>
+  <button class="button" type="submit">Log In</button>
 </form>
 <div>
   No user? Please <a href={{url_for('view_register')}}>register</a>

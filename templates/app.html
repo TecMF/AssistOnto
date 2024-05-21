@@ -1,28 +1,35 @@
 {% extends "base.html" %}
 
+{% from 'message.html' import message %}
+
 {% block content %}
 <script defer="true" src="{{url_for('static', filename='main.js')}}" type="text/javascript"></script>
 <main class="flex-row">
   <div id="ai-chat" class="flex-column">
-    <div id="messages" class="flex-column">{% include 'next_user_message.html' %}</div>
-    <textarea id="userInput"
-              name="user_message"
-              placeholder="Message assistant"></textarea>
-    <button id="userInputButton"
-            hx-post="{{url_for('message_new')}}"
-            hx-trigger="click"
-            hx-include="previous #userInput"
-            hx-target="#messages"
-            hx-swap="beforeend"
-            >
-      ➢
-    </button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
+    <div id="messages" class="flex-column">
+      {% for msg in chat_messages %}
+      {{ message('user' if msg.user_msg else 'assistant', msg.content, 'AI' if not msg.user_msg else None) }}
+      {% endfor %}
+    {% include 'next_user_message.html' %}
+    </div>
+    <div class="flex-row">
+      <textarea id="userInput" class="input"
+                name="user_message"
+                placeholder="Message assistant"></textarea>
+      <button id="userInputButton"
+              class="button"
+              hx-post="{{url_for('message_new')}}"
+              hx-trigger="click"
+              hx-include="previous #userInput"
+              hx-target="#messages"
+              hx-swap="beforeend"
+              >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
+    </div>
   </div>
   <div id="ontology-editor">
     <!-- TODO: industrial grade options: ace editor, monaco, codejar, codemirror 6 -->
-    <textarea id="ontology" name="user_ontology" data-changed="false">
-# Your ontology goes here
-    </textarea>
+    <textarea id="ontology" class="input" name="user_ontology" data-changed="false">
+# Your ontology goes here</textarea>
   </div>
 </main>
 {% endblock %}

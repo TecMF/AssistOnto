@@ -1,5 +1,10 @@
-<div data-role="assistant">
-  <div class="font-semibold">{{ainame}}</div>
-  <div>{{assistant_message}}</div>
+{% macro message(role, content, name) -%}
+<div data-role="{{role}}">
+  {% if name is not none %}
+  <div class="font-semibold">{{name}}</div>
+  {% endif %}
+  <div>{{content}}</div>
 </div>
+{%- endmacro %}
+{{ message('assistant', assistant_message, ainame) }}
 {% include 'next_user_message.html' %}
