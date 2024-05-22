@@ -7,6 +7,7 @@
     --input-focus-h: 245;
     --input-focus-s: 100%;
     --input-focus-l: 42%;
+    --chat-input-height: 7em;
 }
 
 *,
@@ -17,7 +18,7 @@
 
 body {
     margin-inline: auto;
-    min-height: 100vh;
+    min-height: 95vh;
     color: var(--color-text);
     background-color: var(--color-background);
     font-size: min(22px, max(16px, 2.4vw));
@@ -28,12 +29,14 @@ body {
 
 div#ai-chat {
     flex: 55%;
-    margin: 1em;
+    margin-inline: 1em;
 }
 
 div#messages {
     width: 95%;
-    margin: 1em;
+    margin-inline: 1em;
+    overflow: auto;
+    height: calc(95vh - 7em);
 }
 
 div#messages > div {
@@ -53,10 +56,13 @@ div#nextUserMessage {
     display: none;
 }
 
+#ai-input {
+    margin-top: 1em;
+}
+
 #userInput {
     width: 90%;
-    justify-self: end;
-    max-height: 7em;
+    max-height: var(--chat-input-height);
     margin-right: 0.5em;
 }
 
