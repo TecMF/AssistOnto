@@ -261,6 +261,17 @@ LIMIT :ncontext""",
     dict(chat_id=chat_id, ncontext=ncontext))
   return reversed(res)
 
+@app.route('/render-user-message', methods=["POST"])
+@login_required
+def render_user_message():
+  user_message = request.form.get('user_message', None)
+  if user_message is None:
+    return "" # no HTML response
+  return render_template(
+    "user_message.html",
+    user_message=user_message
+  )
+
 @app.route('/messaged', methods=["POST"])
 @login_required
 def message_new():

@@ -13,12 +13,6 @@
       // send ontology along with request if it changed
       evt.detail.parameters['ontology'] = ontologyText.value;
     }
-    // add user message to chat; we assume an anchor with this id
-    const nextUserMessage = document.querySelector("#nextUserMessage");
-    if (nextUserMessage) {
-      nextUserMessage.textContent = evt.detail.parameters['user_message'];
-      nextUserMessage.removeAttribute("id");
-    }
     // reset input and disable button until we get a response or an error
     userInputElem.value = ''; // reset content
     userInputButton.disabled = true;

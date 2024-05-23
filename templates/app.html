@@ -10,7 +10,6 @@
       {% for msg in chat_messages %}
       {{ message('user' if msg.user_msg else 'assistant', msg.content, 'AI' if not msg.user_msg else None) }}
       {% endfor %}
-    {% include 'next_user_message.html' %}
     </div>
     <div id="ai-input" class="flex-row">
       <textarea id="userInput" class="input"
@@ -19,11 +18,19 @@
       <button id="userInputButton"
               class="button"
               hx-post="{{url_for('message_new')}}"
-              hx-trigger="click"
-              hx-include="previous #userInput"
+              hx-trigger="click delay:50ms"
+              hx-include="#userInput"
               hx-target="#messages"
               hx-swap="beforeend"
               >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
+      <span class="nodisplay"
+            {# element used solely for triggering another event on click #}
+            hx-post="{{url_for('render_user_message')}}"
+            hx-trigger="click from:#userInputButton"
+            hx-include="#userInput"
+            hx-target="#messages"
+            hx-swap="beforeend"
+            ></span>
     </div>
   </div>
   <div id="ontology-editor">

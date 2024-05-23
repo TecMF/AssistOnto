@@ -28,14 +28,15 @@ body {
 }
 
 div#ai-chat {
-    flex: 55%;
+    max-width: 50vw;
+    flex: 1;
     margin-inline: 1em;
 }
 
 div#messages {
     width: 95%;
     margin-inline: 1em;
-    overflow: auto;
+    overflow-y: scroll;
     height: calc(95vh - 7em);
 }
 
@@ -51,8 +52,7 @@ div#messages > div[data-role="user"] {
     border-radius: 0.3em;
 }
 
-div#nextUserMessage {
-    /* make next message skeleton invisible */
+.nodisplay {
     display: none;
 }
 
@@ -67,7 +67,7 @@ div#nextUserMessage {
 }
 
 div#ontology-editor {
-    flex: 50%;
+    flex: 1;
 }
 
 textarea#ontology {
@@ -175,4 +175,9 @@ h4 {
 
     /* Optional, not supported for all languages */
     hyphens: auto;
+}
+
+pre {
+    white-space: pre;
+    overflow-x: auto;
 }
