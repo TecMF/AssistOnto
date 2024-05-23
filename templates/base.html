@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AssistOnto — {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+    {% if config['DEBUG'] %}
+    <script src="{{url_for('static', filename='htmx.js')}}"></script>
+    {% else %}
     <script src="{{url_for('static', filename='htmx.min.js')}}"></script>
+    {% endif %}
   </head>
   <body>
     <nav class="nopadding nomargin borderbox">
