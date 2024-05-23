@@ -4,7 +4,7 @@
 
 {% block content %}
 <script defer="true" src="{{url_for('static', filename='main.js')}}" type="text/javascript"></script>
-<main class="flex-row">
+<div class="flex-row">
   <div id="ai-chat" class="flex-column">
     <div id="messages" class="flex-column">
       {% for msg in chat_messages %}
@@ -38,5 +38,5 @@
     <textarea id="ontology" class="input" name="user_ontology" data-changed="false">
 # Your ontology goes here</textarea>
   </div>
-</main>
+</div>
 {% endblock %}

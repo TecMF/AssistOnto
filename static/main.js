@@ -2,6 +2,7 @@
   const userInputButton = document.querySelector("#userInputButton");
   const userInputElem = document.querySelector("#userInput");
   const ontologyText = document.querySelector("#ontology");
+  const messages = document.querySelector("#messages");
 
   /* register change in ontology so we know when to send it again */
   ontologyText.addEventListener("change", (event) => {
@@ -21,5 +22,9 @@
   userInputButton.addEventListener('htmx:afterRequest', function (evt) {
     // enable button again after request is done
     userInputButton.disabled = false;
+  });
+
+  messages.addEventListener('htmx:afterSwap', function (evt) {
+    messages.scrollTop = messages.scrollHeight;
   });
 }
