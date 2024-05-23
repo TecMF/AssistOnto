@@ -3,8 +3,7 @@
   {% if name is not none %}
   <div class="font-semibold">{{name}}</div>
   {% endif %}
-  <div>{{content}}</div>
+  <div>{{sane_markdown(content)|safe}}</div>
 </div>
 {%- endmacro %}
-{{ message('assistant', assistant_message, ainame) }}
 {% include 'next_user_message.html' %}

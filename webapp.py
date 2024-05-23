@@ -8,6 +8,8 @@ from openai import OpenAI
 import os
 import sqlite3
 import secrets
+import markdown as md
+from sanitize_md import SanitizeExtension
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
@@ -42,6 +44,13 @@ def close_connection(exception):
   if db is not None:
     db.close()
 
+#### Templating
+HTML_WHITELIST = {
+  'div': [], 'p': [], 'pre':[], 'code': ['class'],
+  # 'a':['href'], # unsafe:
+  'blockquote': [], 'em': [], 'strong': [], 'h1':[], 'h2':[], 'h3':[]
+}
+app.add_template_global(lambda text: md.markdown(text, extensions=['fenced_code', SanitizeExtension(HTML_WHITELIST)]), name='sane_markdown')
 
 #### Authentication
 
@@ -290,12 +299,8 @@ def message_new():
   # TODO: check if response was ok
   assistant_message = response.choices[0].message.content
   _ = chat_insert_message(chat_id, "assistant", assistant_message)
-  # TODO: get formatted output. For this apparently the best way is
-  # to ask for markdown and then convert to HTML (using a library
-  # that treats markdown as unsafe, i.e., removes any HTML tags and
-  # stuff)
   return render_template(
-    "message.html",
+    "assistant_message.html",
     ainame="AI", # TODO: include AI name when we have more options
     assistant_message=assistant_message
   )
