@@ -4,6 +4,8 @@
   const ontologyText = document.querySelector("#ontology");
   const messages = document.querySelector("#messages");
 
+  messages.scrollTop = messages.scrollHeight;
+
   /* register change in ontology so we know when to send it again */
   ontologyText.addEventListener("change", (event) => {
     ontologyText.setAttribute("data-changed", "true");

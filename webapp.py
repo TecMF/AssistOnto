@@ -297,7 +297,7 @@ def message_new():
     for (content, usr_msg) in context_messages
   ]
   ontology = request.form.get('ontology', None)
-  ontology_message = f"The current ontology is:\n{ontology}" if ontology is not None else ""
+  ontology_message = f"The current ontology is:\n{ontology}" if ontology else ""
   system_msg = dict(
     role="system",
     content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
