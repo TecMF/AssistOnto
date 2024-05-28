@@ -182,29 +182,33 @@ def index():
 @login_required
 def view_app(chat_id=None):
   db = get_db()
+  user_id = g._user_id
   user_chats = db_query_db(
       db,
       """SELECT id, subject
 FROM chats
 WHERE user_id = :user_id""",
-      dict(user_id=g._user_id)
+      dict(user_id=user_id)
     )
+  # app.logger.info(user_chats)
   if chat_id is None or chat_id not in [chat['id'] for chat in user_chats]:
     # No chat specified or unauthorized chat (not owned by user), so
     # get latest chat id, if any
-    chat_id = db_query_db(
+    r = db_query_db(
       db,
       """SELECT chat_id
 FROM messages INNER JOIN chats ON messages.chat_id = chats.id
 WHERE user_id = :user_id
 ORDER BY tstamp DESC
 LIMIT 1""",
-      dict(user_id=g._user_id),
+      dict(user_id=user_id),
       one = True
-    )['chat_id']
-    if chat_id is None:
+    )
+    if r is None:
       # if no chat, create one
       chat_id = chat_new_chat(user_id, db=db)
+    else:
+      chat_id = r['chat_id']
   session[USER_CHAT_KEY] = chat_id
   chat_messages = chat_get_context(chat_id, ncontext=MAX_MESSAGES_SHOWN)
   return render_template(
@@ -228,7 +232,7 @@ def chat_new_chat(user_id, subject=None, db=None):
     db.rollback()
   else:
     db.commit()
-    chat_id = res.chat_id
+    chat_id = res['chat_id']
     return chat_id
 
 def chat_insert_message(chat_id, role, content, db=None):
