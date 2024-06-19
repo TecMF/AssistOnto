@@ -288,7 +288,6 @@ def message_new():
   db = get_db()
   _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
-  # # TODO: break it into paragraphs <p>
   api_key = os.environ.get("OPENAI_API_KEY", None)
   if api_key is None:
     flash("No API key means we can't contact the assistant.", category='error')
