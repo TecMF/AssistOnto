@@ -21,7 +21,6 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
   "Flask~=3.0.2",
@@ -32,38 +31,42 @@ dependencies = [
 ]
 
 [tool.hatch.version]
-path = "assistonto/src/__about__.py"
+path = "assistonto/__about__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
   "/.github",
 ]
 
-# [tool.hatch.build.targets.wheel]
+[tool.hatch.envs.dev]
+dependencies = []
+[tool.hatch.envs.dev.scripts]
+server = "python assistonto/main.py server --port 8000 --db-path assistonto/assistonto.db"
+
+[tool.hatch.build.targets.wheel]
+only-packages = true
 # packages = ["assistonto/src"]
 
-[tool.hatch.envs.types]
-extra-dependencies = [
-  "mypy>=1.0.0",
-]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/assistonto tests}"
+# [tool.hatch.envs.types]
+# extra-dependencies = [
+#   "mypy>=1.0.0",
+# ]
 
-[tool.coverage.run]
-source_pkgs = ["assistonto", "tests"]
-branch = true
-parallel = true
-omit = [
-  "assistonto/src/__about__.py",
-]
+# [tool.coverage.run]
+# source_pkgs = ["assistonto", "tests"]
+# branch = true
+# parallel = true
+# omit = [
+#   "assistonto/src/__about__.py",
+# ]
 
-[tool.coverage.paths]
-assistonto = ["assistonto/src", "*/assistonto/assistonto/src"]
-tests = ["tests", "*/assistonto/tests"]
+# [tool.coverage.paths]
+# assistonto = ["assistonto/src", "*/assistonto/assistonto/src"]
+# tests = ["tests", "*/assistonto/tests"]
 
-[tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+# [tool.coverage.report]
+# exclude_lines = [
+#   "no cov",
+#   "if __name__ == .__main__.:",
+#   "if TYPE_CHECKING:",
+# ]
