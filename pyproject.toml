@@ -25,7 +25,6 @@ classifiers = [
 dependencies = [
   "Flask~=3.0.2",
   "gunicorn~=22.0.0",
-  "lxml~=4.9.3",
   "Markdown~=3.5.2",
   "openai~=1.30.1",
 ]
@@ -39,9 +38,12 @@ exclude = [
 ]
 
 [tool.hatch.envs.dev]
-dependencies = []
+dependencies = [
+  "ruff",
+]
 [tool.hatch.envs.dev.scripts]
 server = "python assistonto/main.py server --port 8000 --db-path assistonto/assistonto.db"
+check = "ruff check assistonto"
 
 [tool.hatch.build.targets.wheel]
 only-packages = true

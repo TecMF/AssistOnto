@@ -1,5 +1,5 @@
 from flask import Flask, url_for, render_template, redirect, request, flash, g, session
-from uuid import uuid4
+#from uuid import uuid4 # TODO: create invitations
 # to create new function decorator:
 from functools import wraps
 # to increase password security
@@ -7,11 +7,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 import os
 import sqlite3
-import secrets
 import markdown as md
 from sanitize_md import SanitizeExtension
 
-app = Flask(__name__)
+app = Flask("AssistOnto")
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 #### Database

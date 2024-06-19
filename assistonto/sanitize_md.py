@@ -1,7 +1,5 @@
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension
-import xml.etree.ElementTree as et
-import markdown as md
 
 class Sanitizer(Treeprocessor):
   def __init__(self, allowed):
@@ -35,7 +33,7 @@ class Sanitizer(Treeprocessor):
 
 
 class SanitizeExtension(Extension):
-  def __init__(self, allowed={'div': []}):
+  def __init__(self, allowed={'div': ['class']}):
     self.allowed = allowed
 
   def extendMarkdown(self, md):
