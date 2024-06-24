@@ -28,5 +28,3 @@ CREATE TABLE messages (
   FOREIGN KEY(chat_id)
     REFERENCES chats(id)
 ) STRICT;
-
-.save assistonto.db

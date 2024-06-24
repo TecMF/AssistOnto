@@ -2,7 +2,7 @@ from app import start_webapp
 import argparse
 import sys
 
-if __name__ == "__main__":
+def main():
   # define parser for command line arguments
   parser = argparse.ArgumentParser(description="AssistOnto")
   subparsers = parser.add_subparsers()
@@ -19,4 +19,8 @@ if __name__ == "__main__":
     sys.exit(1)
   args = parser.parse_args()
   # run
-  args.func(args)
+  sys.exit(args.func(args))
+
+
+if __name__ == "__main__":
+  main()

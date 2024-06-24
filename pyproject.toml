@@ -49,6 +49,11 @@ check = "ruff check assistonto"
 only-packages = true
 # packages = ["assistonto/src"]
 
+# [project.scripts]
+# assistonto = "assistonto.__main__:main"
+
+#[tool.hatch.build.targets.app]
+
 # [tool.hatch.envs.types]
 # extra-dependencies = [
 #   "mypy>=1.0.0",

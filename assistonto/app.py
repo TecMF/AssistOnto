@@ -4,6 +4,7 @@ from flask import Flask, url_for, render_template, redirect, request, flash, g, 
 from functools import wraps
 # to increase password security
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from openai import OpenAI
 import os
 import sqlite3
@@ -11,12 +12,13 @@ import markdown as md
 from sanitize_md import SanitizeExtension
 
 app = Flask("AssistOnto")
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+app.config.from_prefixed_env("ASSISTONTO")
+
+if app.config.get("PROXY") is not None:
+  # see https://flask.palletsprojects.com/en/3.0.x/deploying/proxy_fix/
+  app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 #### Database
-
-DATABASE = None
-MAX_MESSAGES_SHOWN = 100
 
 def db_query_db(db, query, args=(), one=False):
   cur = db.execute(query, args)
@@ -27,7 +29,7 @@ def db_query_db(db, query, args=(), one=False):
 def get_db():
   db = getattr(g, '_database', None)
   if db is None:
-    db = sqlite3.connect(DATABASE)
+    db = sqlite3.connect(app.config.get('DB_PATH', 'assistonto.db'))
     db.row_factory = sqlite3.Row
     g._database = db
     db_query_db(db, "PRAGMA foreign_keys=ON")
@@ -209,7 +211,7 @@ LIMIT 1""",
     else:
       chat_id = r['chat_id']
   session[USER_CHAT_KEY] = chat_id
-  chat_messages = chat_get_context(chat_id, ncontext=MAX_MESSAGES_SHOWN)
+  chat_messages = chat_get_context(chat_id, ncontext=app.config.get('MAX_MESSAGES_SHOWN', 100))
   return render_template(
     "app.html",
     username=g._username,
@@ -287,10 +289,11 @@ def message_new():
   db = get_db()
   _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
-  api_key = os.environ.get("OPENAI_API_KEY", None)
+  ## TODO: make this more generic, see too https://flask.palletsprojects.com/en/3.0.x/config/#configuring-from-environment-variables
+  api_key = app.config.get("OPENAI_API_KEY", None)
   if api_key is None:
     flash("No API key means we can't contact the assistant.", category='error')
-    return "", 500
+    return "No API key configured", 500
   client = OpenAI(api_key=api_key)
   del api_key
   context_messages = chat_get_context(chat_id, ncontext=3, db=db)
@@ -341,7 +344,6 @@ def start_webapp(host=None, port=None, debug_mode=None, db_path=None):
     # INFO: this is to debug the server; to debug openai library
     # we can set the environment variable OPENAI_LOG=debug
     debug_mode = True
-  if db_path is None:
-    db_path = 'assistonto.db'
-  DATABASE = db_path
-  app.run(host=host, port=port, debug=debug_mode)
+  if db_path is not None:
+    app.config['DB_PATH'] = db_path
+  return app.run(host=host, port=port, debug=debug_mode)
