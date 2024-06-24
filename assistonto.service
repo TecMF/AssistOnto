@@ -14,4 +14,4 @@ RestartSec=6
 PrivateTmp=yes
 
 [Install]
-WantedBy=local.target
+WantedBy=multi-user.target
