@@ -6,7 +6,6 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from openai import OpenAI
-import os
 import sqlite3
 import markdown as md
 from sanitize_md import SanitizeExtension
@@ -135,6 +134,7 @@ def post_register():
   username = request.form.get('input-username', '')
   email = request.form.get('input-email')
   password = request.form.get('input-password', '')
+  invite_token = request.form.get('input-invite-token', '')
   input_valid = True
   if len(username) < 6:
     input_valid = False
@@ -142,6 +142,13 @@ def post_register():
   if len(password) < 6:
     input_valid = False
     flash("Password should have at least 6 characters", category='warning')
+  was_invited = query_db("""SELECT TRUE
+  FROM invites
+  WHERE redeemed IS NULL AND secret = ?""",
+                         (invite_token,), one=True)
+  if was_invited is None:
+    input_valid = False
+    flash("Invite token is invalid", category='warning')
   # finished validation
   if not input_valid:
     return redirect(url_for('view_register'))
@@ -154,10 +161,16 @@ def post_register():
   RETURNING id AS user_id""",
             {'username': username, 'email': email, 'password': password_hash})
     res = cur.fetchone()
+    cur = db.execute("""UPDATE invites
+SET redeemed = unixepoch()
+WHERE secret = ?""", (invite_token,))
     if res is not None:
       user_id = res['user_id']
       g._user_id = user_id
-    db.commit()
+      db.commit()
+    else:
+      db.rollback()
+      redirect(url_for('view_register'))
   except sqlite3.IntegrityError:
     flash("Username already exists, please choose another", category='warning')
     return redirect(url_for('view_register'))

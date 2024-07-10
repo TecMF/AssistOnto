@@ -8,7 +8,7 @@
 <form method="POST" action="{{url_for('post_register')}}">
   <div>
     <label>Username:</label>
-    <input class="block" type="text" name="input-username" minlength="6">
+    <input class="block" type="text" name="input-username" minlength="6" required>
   </div>
   <div>
     <label>Email:</label>
@@ -16,8 +16,12 @@
   </div>
   <div>
     <label>Password:</label>
-    <input class="block" type="password" name="input-password" minlength="6">
+    <input class="block" type="password" name="input-password" minlength="6" required>
   </div>
-  <button class="block" type="submit">Log In</button>
+  <div>
+    <label>Invite token:</label>
+    <input class="block" type="password" name="input-invite-token" required>
+  </div>
+  <button class="block" type="submit">Register</button>
 </form>
 {% endblock %}

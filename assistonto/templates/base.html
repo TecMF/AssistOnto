@@ -32,6 +32,7 @@
         </li>
         {% else %}
         <li>
+          <a class="nodecor sm-padding less-emphasis" href="{{url_for('index')}}">{{ g._username }}</a>
           <a class="nodecor sm-padding" href="{{url_for('logout')}}">
             Log Out
           </a>
@@ -49,7 +50,7 @@
     <section>
       <ul class="nobullet">
         {% for (cat, message) in messages %}
-        <li {% if cat in ['warning', 'error'] %}class="emphasis-darker"{% endif %}>{{ message }}</li>
+        <li {% if cat in ['warning', 'error'] %}class="more-emphasis"{% endif %}>{{ message }}</li>
         {% endfor %}
       </ul>
     </section>

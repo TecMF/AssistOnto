@@ -181,3 +181,13 @@ pre {
     white-space: pre;
     overflow-x: auto;
 }
+
+.less-emphasis {
+    color: var(--color-pair);
+}
+
+
+.more-emphasis {
+    color: var(--color-emphasis-darker);
+
+}

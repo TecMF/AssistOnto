@@ -8,11 +8,11 @@
 <form method="POST" action="{{url_for('post_login')}}">
   <div>
     <label>Username:</label>
-    <input class="input" type="text" name="input-username" minlength="6">
+    <input class="input" type="text" name="input-username" minlength="6" required>
   </div>
   <div>
     <label>Password:</label>
-    <input class="input" type="password" name="input-password" minlength="6">
+    <input class="input" type="password" name="input-password" minlength="6" required>
   </div>
   <input type="hidden" name="next-url" value="{{ request.args.get('next', '') }}"/>
   <button class="button" type="submit">Log In</button>

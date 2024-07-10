@@ -39,7 +39,7 @@ dependencies = [
   "ruff",
 ]
 [tool.hatch.envs.dev.scripts]
-server = "python assistonto/main.py server --port 8000 --db-path assistonto/assistonto.db"
+server = "python . server --port 8000 --db-path ../assistonto.db" # run from assistonto directory
 check = "ruff check assistonto"
 
 [tool.hatch.build.targets.wheel]

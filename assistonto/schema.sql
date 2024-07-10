@@ -28,3 +28,14 @@ CREATE TABLE messages (
   FOREIGN KEY(chat_id)
     REFERENCES chats(id)
 ) STRICT;
+
+DROP TABLE IF EXISTS invites;
+CREATE TABLE invites (
+  secret TEXT NOT NULL UNIQUE,
+  created INTEGER NOT NULL,
+  redeemed INTEGER
+) STRICT;
+
+-- -- create invite with
+-- INSERT INTO invites(secret, created)
+-- VALUES (lower(hex(randomblob(32))), unixepoch());
