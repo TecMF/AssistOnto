@@ -8,6 +8,9 @@ CREATE TABLE users (
   password TEXT NOT NULL
 ) STRICT;
 
+CREATE INDEX username_index
+ON users(username);
+
 DROP TABLE IF EXISTS chats;
 CREATE TABLE chats (
   id INTEGER PRIMARY KEY,
@@ -16,6 +19,9 @@ CREATE TABLE chats (
   FOREIGN KEY(user_id)
     REFERENCES users(id)
 ) STRICT;
+
+CREATE INDEX chats_user_index
+ON chats(user_id);
 
 DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
@@ -29,6 +35,9 @@ CREATE TABLE messages (
     REFERENCES chats(id)
 ) STRICT;
 
+CREATE INDEX messages_chat_index
+ON messages(chat_id);
+
 DROP TABLE IF EXISTS invites;
 CREATE TABLE invites (
   secret TEXT NOT NULL UNIQUE,
@@ -36,6 +45,5 @@ CREATE TABLE invites (
   redeemed INTEGER
 ) STRICT;
 
--- -- create invite with
--- INSERT INTO invites(secret, created)
--- VALUES (lower(hex(randomblob(32))), unixepoch());
+--- create invite with
+-- INSERT INTO invites(secret, created) VALUES (lower(hex(randomblob(32))), unixepoch()) RETURNING secret;
