@@ -1,0 +1,17 @@
+<div id="settings" class="modal" _="on closeModal add .closing then wait for animationend then remove me">
+  <div class="modal-underlay" _="on click trigger closeModal"></div>
+  <div class="modal-content">
+    <h1>Settings</h1>
+    <form hx-post="{{url_for('post_settings')}}" hx-swap="none">
+      <div class="sm-padding">
+        <label>Model:</label>
+        <select name="model" id="model-select">
+          {% for model in other_models %}
+          <option {{"" if model != chosen_model else 'selected=""'}} value="{{model}}">{{model}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="button sm-padding" _="on click trigger closeModal" type="submit">Save</button>
+    </form>
+  </div>
+</div>

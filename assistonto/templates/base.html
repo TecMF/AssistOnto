@@ -10,6 +10,7 @@
     {% else %}
     <script src="{{url_for('static', filename='htmx.min.js')}}"></script>
     {% endif %}
+    <script src="{{url_for('static', filename='hyperscript.min.js')}}"></script>
   </head>
   <body>
     <nav class="nopadding nomargin borderbox">
@@ -33,9 +34,8 @@
         {% else %}
         <li>
           <a class="nodecor sm-padding less-emphasis" href="{{url_for('index')}}">{{ g._username }}</a>
-          <a class="nodecor sm-padding" href="{{url_for('logout')}}">
-            Log Out
-          </a>
+          <a class="nodecor sm-padding clickable" hx-trigger="click" hx-get="{{url_for('view_settings')}}" hx-target="body" hx-swap="beforeend" title="Settings">⚙</a>
+          <a class="nodecor sm-padding" href="{{url_for('logout')}}">Log Out</a>
         </li>
         {% endif %}
       </ul>

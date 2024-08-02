@@ -11,7 +11,13 @@ import markdown as md
 from sanitize_md import SanitizeExtension
 
 app = Flask("AssistOnto")
+app.config.from_object('default_settings')
 app.config.from_prefixed_env("ASSISTONTO")
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Strict',
+)
 
 if app.config.get("PROXY") is not None:
   # see https://flask.palletsprojects.com/en/3.0.x/deploying/proxy_fix/
@@ -185,11 +191,35 @@ def logout():
 
 #### Business Routes
 
+SETTING_MODEL_KEY = "setting-model"
+
 @app.route("/", methods=["GET"])
 def index():
   if session.get(USER_SESSION_KEY) is not None:
     return redirect(url_for('view_app'))
   return render_template("index.html")
+
+@app.route('/settings', methods=["GET"])
+@login_required
+def view_settings():
+  models = app.config.get("AVAILABLE_MODELS")
+  def_model = app.config.get("DEFAULT_MODEL")
+  return render_template(
+    "settings.html",
+    chosen_model=session.get(SETTING_MODEL_KEY, def_model),
+    other_models=models,
+  )
+
+@app.route('/settings', methods=["POST"])
+@login_required
+def post_settings():
+  new_model = request.form['model']
+  models = app.config.get("AVAILABLE_MODELS")
+  if new_model != session.get(SETTING_MODEL_KEY) \
+     and new_model in models:
+    session[SETTING_MODEL_KEY] = new_model
+  return ""
+
 
 @app.route('/chat', methods=["GET"])
 @app.route('/chat/<int:chat_id>', methods=["GET"])
@@ -304,10 +334,16 @@ def message_new():
   # get answer from AI
   ## TODO: make this more generic, see too https://flask.palletsprojects.com/en/3.0.x/config/#configuring-from-environment-variables
   api_key = app.config.get("OPENAI_API_KEY", None)
+  models = app.config.get("AVAILABLE_MODELS", {})
+  chosen_model = session.get(SETTING_MODEL_KEY, False) \
+    or app.config.get("DEFAULT_MODEL")
   if api_key is None:
     flash("No API key means we can't contact the assistant.", category='error')
     return "No API key configured", 500
-  client = OpenAI(api_key=api_key)
+  client = OpenAI(
+    api_key=api_key,
+    base_url=models.get(chosen_model)
+  )
   del api_key
   context_messages = chat_get_context(chat_id, ncontext=3, db=db)
   messages = [
@@ -321,7 +357,7 @@ def message_new():
     content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
   messages.append(system_msg)
   response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model=chosen_model,
     messages=messages,
     max_tokens=2000
   )
