@@ -21,6 +21,9 @@ Then delete old container, and run the new one:
     docker run --detach --name assistonto_server -p 8080:8080 --env-file /opt/assistonto/assistonto.env -v /opt/assistonto/assistonto.db:/opt/assistonto/assistonto.db localhost/assistonto
     systemctl start assistonto
 
+Run SQLite on the server:
+    sudo -u assistonto ./sqlite3 /opt/assistonto/assistonto.db
+
 ## Configuration
 
 Use the following environment variables:
