@@ -1,3 +1,6 @@
+check:
+	hatch run dev:check
+
 build:
 	rm -r assistonto/__pycache__/
 	podman build -t assistonto .

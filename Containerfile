@@ -1,4 +1,4 @@
-# to test locally: podman run -e ASSISTONTO_SECRET_KEY='sdfhdjhd' -e ASSISTONTO_OPENAI_API_KEY=(head -1 ~/me/secrets/openai.key) -it --rm -p 8080:8080 assistonto
+# to test locally: podman run --env-file dev.env -it --rm -p 8080:8080 assistonto # but api_key might need to be passed directly
 FROM python:3
 
 COPY requirements.txt /

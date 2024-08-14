@@ -3,8 +3,9 @@
 ## Test locally
 
     hatch shell # we use hatch for development (see pyproject.toml)
-    # run from the assistonto directory, with (test) assistonto.db in root directory
-    ASSISTONTO_SECRET_KEY='sdfhdjhd' ASSISTONTO_OPENAI_API_KEY=(head -1 ~/me/secrets/openai.key) hatch run dev:server
+    # run from the assistonto directory, with (test) assistonto.db
+    # in root directory, and the variables in dev.env in the environment
+    hatch run dev:server
 
 ## Build & Deploy
 
@@ -29,6 +30,5 @@ Run SQLite on the server:
 Use the following environment variables:
     ASSISTONTO_DB_PATH=assistonto.db # path to database
     ASSISTONTO_SECRET_KEY=dkfjkdgj # Flask secret key
-    ASSISTONTO_OPENAI_API_KEY=kdjfkdgj # OpenAi API key
-
-And do check out and modify the `default_settings.py` file.
+    ASSISTONTO_MODELS='{"<model_name>": {"default": "true", "url": "<model_url>", "credentials": "<api_key>"}, "<another_model": {"credentials": {"file": "<file_containing_api_key"}}}'
+    ASSISTONTO_MAX_MESSAGES_SHOWN=100

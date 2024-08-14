@@ -1,5 +1,4 @@
 from flask import Flask, url_for, render_template, redirect, request, flash, g, session
-#from uuid import uuid4 # TODO: create invitations
 # to create new function decorator:
 from functools import wraps
 # to increase password security
@@ -9,10 +8,25 @@ from openai import OpenAI
 import sqlite3
 import markdown as md
 from sanitize_md import SanitizeExtension
+import os
 
 app = Flask("AssistOnto")
-app.config.from_object('default_settings')
+
+def load_model_credentials():
+  models = app.config.get('MODELS')
+  for model, data in models.items():
+    if data.get('default'):
+      app.config['default_model'] = model
+    if isinstance(credentials := data.get('credentials'), dict):
+      if credentials_path := credentials['file']:
+        with open(os.path.expanduser(credentials_path)) as f:
+          models[model]['credentials'] = f.read()
+      else:
+        models[model]['credentials'] = None
+
+
 app.config.from_prefixed_env("ASSISTONTO")
+load_model_credentials()
 app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
@@ -22,6 +36,8 @@ app.config.update(
 if app.config.get("PROXY") is not None:
   # see https://flask.palletsprojects.com/en/3.0.x/deploying/proxy_fix/
   app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+
 
 #### Database
 
@@ -202,8 +218,10 @@ def index():
 @app.route('/settings', methods=["GET"])
 @login_required
 def view_settings():
-  models = app.config.get("AVAILABLE_MODELS")
-  def_model = app.config.get("DEFAULT_MODEL")
+  models = app.config.get("MODELS")
+  def_model = app.config.get("default_model") or next(iter(models)) if models else None
+  if def_model is None:
+    return "No models available", 500
   return render_template(
     "settings.html",
     chosen_model=session.get(SETTING_MODEL_KEY, def_model),
@@ -214,7 +232,7 @@ def view_settings():
 @login_required
 def post_settings():
   new_model = request.form['model']
-  models = app.config.get("AVAILABLE_MODELS")
+  models = app.config.get("MODELS")
   if new_model != session.get(SETTING_MODEL_KEY) \
      and new_model in models:
     session[SETTING_MODEL_KEY] = new_model
@@ -332,19 +350,20 @@ def message_new():
   db = get_db()
   _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
-  ## TODO: make this more generic, see too https://flask.palletsprojects.com/en/3.0.x/config/#configuring-from-environment-variables
-  api_key = app.config.get("OPENAI_API_KEY", None)
-  models = app.config.get("AVAILABLE_MODELS", {})
-  chosen_model = session.get(SETTING_MODEL_KEY, False) \
-    or app.config.get("DEFAULT_MODEL")
+  models = app.config.get("MODELS", {})
+  chosen_model = session.get(SETTING_MODEL_KEY, '')
+  model = models.get(chosen_model) or app.config.get("default_model") if models else None
+  if model is None:
+    flash("No model means we can't have an assistant.", category='error')
+    return "Model not found", 500
+  api_key = model.get('credentials')
   if api_key is None:
     flash("No API key means we can't contact the assistant.", category='error')
     return "No API key configured", 500
   client = OpenAI(
     api_key=api_key,
-    base_url=models.get(chosen_model)
+    base_url=model.get('url')
   )
-  del api_key
   context_messages = chat_get_context(chat_id, ncontext=3, db=db)
   messages = [
     dict(role="user" if usr_msg == 1 else "assistant", content=content)
