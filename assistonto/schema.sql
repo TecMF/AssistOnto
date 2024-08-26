@@ -27,7 +27,7 @@ DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
   id INTEGER PRIMARY KEY,
   chat_id INTEGER NOT NULL,
-  -- can't use BOOLEAN with strict
+  -- is user message: can't use BOOLEAN with strict
   user_msg INTEGER,
   content TEXT NOT NULL,
   tstamp INTEGER NOT NULL,

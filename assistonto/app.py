@@ -1,6 +1,7 @@
 from flask import Flask, url_for, render_template, redirect, request, flash, g, session
 # to create new function decorator:
 from functools import wraps
+import itertools as it
 # to increase password security
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -237,8 +238,7 @@ def post_settings():
      and new_model_name in models:
     session[SETTING_MODEL_KEY] = new_model_name
     return render_template("ai_choice.html", ainame=new_model_name)
-  return "", 400
-
+  return '', 204 # no content -> no swap
 
 @app.route('/chat', methods=["GET"])
 @app.route('/chat/<int:chat_id>', methods=["GET"])
@@ -322,12 +322,14 @@ def chat_get_context(chat_id, ncontext=3, db=None):
   res = db_query_db(
     db,
     """SELECT content, user_msg
+FROM (SELECT content, user_msg, tstamp
 FROM messages
 WHERE chat_id = :chat_id
 ORDER BY tstamp DESC
-LIMIT :ncontext""",
+LIMIT :ncontext)
+ORDER BY tstamp ASC""",
     dict(chat_id=chat_id, ncontext=ncontext))
-  return reversed(res)
+  return res
 
 @app.route('/render-user-message', methods=["POST"])
 @login_required
@@ -368,17 +370,28 @@ def message_new():
     api_key=api_key,
     base_url=base_url
   )
-  context_messages = chat_get_context(chat_id, ncontext=3, db=db)
-  messages = [
-    dict(role="user" if usr_msg == 1 else "assistant", content=content)
-    for (content, usr_msg) in context_messages
-  ]
   ontology = request.form.get('ontology', None)
   ontology_message = f"The current ontology is:\n{ontology}" if ontology else ""
-  system_msg = dict(
-    role="system",
-    content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
-  messages.append(system_msg)
+  messages = [
+    dict(
+      role="system",
+      content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
+  ]
+  context_messages = it.dropwhile(
+    # remove initial assistant messages since we have to start with
+    # user interactions
+    lambda m: m['user_msg'] == 0,
+    chat_get_context(chat_id, ncontext=3, db=db)
+  )
+  # add context messages without repeated messages (we must have
+  # messages following the user/assistant/user order)
+  messages.append({"role":'user', "content": next(context_messages)['content']})
+  messages.extend([
+    dict(role="user" if usr_msg == 1 else "assistant", content=content)
+    for (_, prev_user_msg), (content, usr_msg) in it.pairwise(context_messages)
+    # don't send two messages from the same person in a row
+    if usr_msg != prev_user_msg
+  ])
   try:
     response = client.chat.completions.create(
       model=model.get('name', chosen_model),
@@ -394,7 +407,7 @@ def message_new():
       assistant_message=assistant_message,
     )
   except openai.AuthenticationError:
-    app.logger.error(f'Could not authenticate with {api_key[:5]} to {base_url} (model={model})')
+    app.logger.error(f'Could not authenticate with key {api_key[:5]}… to {base_url} (model={model})')
     return render_template('error.html', what="Could not authenticate to LLM server"), 500
 
 class NotAuthorized(Exception):
