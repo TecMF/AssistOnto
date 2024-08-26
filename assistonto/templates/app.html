@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% from 'message.html' import message %}
+{% from 'ainame.html' import ai_choice %}
 
 {% block content %}
 <script defer="true" src="{{url_for('static', filename='main.js')}}" type="text/javascript"></script>
@@ -14,7 +15,7 @@
     <div id="ai-input" class="flex-row">
       <textarea id="userInput" class="input"
                 name="user_message"
-                placeholder="Message assistant ({{ainame}})"></textarea>
+                placeholder="Message assistant"></textarea>
       <button id="userInputButton"
               class="button"
               hx-post="{{url_for('message_new')}}"
@@ -23,7 +24,7 @@
               hx-target="#messages"
               hx-swap="beforeend"
               >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
-      <input class='nodisplay' id='ainame' name='ainame' value='{{ainame}}'> {# element used solely to keep the ai model name being used #}
+      {{ai_choice(ainame)}}
       <span class="nodisplay"
             {# element used solely for triggering another event on click #}
             hx-post="{{url_for('render_user_message')}}"

@@ -2,7 +2,7 @@
   <div class="modal-underlay" _="on click trigger closeModal"></div>
   <div class="modal-content">
     <h1>Settings</h1>
-    <form hx-post="{{url_for('post_settings')}}" hx-swap="none">
+    <form hx-post="{{url_for('post_settings')}}" hx-swap="outerHTML" hx-target="#ainame">
       <div class="sm-padding">
         <label>Model:</label>
         <select name="model" id="model-select">

@@ -231,12 +231,13 @@ def view_settings():
 @app.route('/settings', methods=["POST"])
 @login_required
 def post_settings():
-  new_model = request.form['model']
+  new_model_name = request.form['model']
   models = app.config.get("MODELS")
-  if new_model != session.get(SETTING_MODEL_KEY) \
-     and new_model in models:
-    session[SETTING_MODEL_KEY] = new_model
-  return ""
+  if new_model_name != session.get(SETTING_MODEL_KEY) \
+     and new_model_name in models:
+    session[SETTING_MODEL_KEY] = new_model_name
+    return render_template("ai_choice.html", ainame=new_model_name)
+  return "", 400
 
 
 @app.route('/chat', methods=["GET"])
@@ -393,7 +394,7 @@ def message_new():
       assistant_message=assistant_message,
     )
   except openai.AuthenticationError:
-    app.logger.error(f'Could not authenticate with {api_key[:5]} to {base_url}')
+    app.logger.error(f'Could not authenticate with {api_key[:5]} to {base_url} (model={model})')
     return render_template('error.html', what="Could not authenticate to LLM server"), 500
 
 class NotAuthorized(Exception):
