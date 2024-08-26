@@ -22,6 +22,10 @@ Then delete old container, and run the new one:
     docker run --detach --name assistonto_server -p 8080:8080 --env-file /opt/assistonto/assistonto.env -v /opt/assistonto/assistonto.db:/opt/assistonto/assistonto.db localhost/assistonto
     service assistonto start
 
+To make deployment faster, I have been mounting the code as a volume
+inside the container instead of deploying. This way we only need to
+deploy when we change or update dependencies.
+
 Run SQLite on the server:
     sudo -u assistonto ./sqlite3 /opt/assistonto/assistonto.db
 

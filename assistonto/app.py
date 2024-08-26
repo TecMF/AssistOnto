@@ -385,10 +385,11 @@ def message_new():
   )
   # add context messages without repeated messages (we must have
   # messages following the user/assistant/user order)
-  messages.append({"role":'user', "content": next(context_messages)['content']})
+  first_msg = next(context_messages)
+  messages.append({"role":'user', "content": first_msg['content']})
   messages.extend([
     dict(role="user" if usr_msg == 1 else "assistant", content=content)
-    for (_, prev_user_msg), (content, usr_msg) in it.pairwise(context_messages)
+    for (_, prev_user_msg), (content, usr_msg) in it.pairwise(it.chain([first_msg], context_messages)) # include first message again or we skip a message
     # don't send two messages from the same person in a row
     if usr_msg != prev_user_msg
   ])
