@@ -4,7 +4,7 @@ from functools import wraps
 # to increase password security
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
-from openai import OpenAI
+import openai
 import sqlite3
 import markdown as md
 from sanitize_md import SanitizeExtension
@@ -14,15 +14,15 @@ app = Flask("AssistOnto")
 
 def load_model_credentials():
   models = app.config.get('MODELS')
-  for model, data in models.items():
+  for model_name, data in models.items():
     if data.get('default'):
-      app.config['default_model'] = model
+      app.config['default_model_name'] = model_name
     if isinstance(credentials := data.get('credentials'), dict):
       if credentials_path := credentials['file']:
         with open(os.path.expanduser(credentials_path)) as f:
-          models[model]['credentials'] = f.read()
+          models[model_name]['credentials'] = f.read()
       else:
-        models[model]['credentials'] = None
+        models[model_name]['credentials'] = None
 
 
 app.config.from_prefixed_env("ASSISTONTO")
@@ -219,7 +219,7 @@ def index():
 @login_required
 def view_settings():
   models = app.config.get("MODELS")
-  def_model = app.config.get("default_model") or next(iter(models)) if models else None
+  def_model = app.config.get("default_model_name") or next(iter(models)) if models else None
   if def_model is None:
     return "No models available", 500
   return render_template(
@@ -277,7 +277,8 @@ LIMIT 1""",
     "app.html",
     username=g._username,
     chat_messages=chat_messages,
-    user_chats=user_chats
+    user_chats=user_chats,
+    ainame=session.get(SETTING_MODEL_KEY) or app.config.get("default_model_name"),
   )
 
 def chat_new_chat(user_id, subject=None, db=None):
@@ -342,6 +343,7 @@ def render_user_message():
 @login_required
 def message_new():
   user_message = request.form.get('user_message', None)
+  ainame = request.form.get('ainame', None)
   if user_message is None:
     return "" # no HTML response
   chat_id = session.get(USER_CHAT_KEY)
@@ -351,8 +353,8 @@ def message_new():
   _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
   models = app.config.get("MODELS", {})
-  chosen_model = session.get(SETTING_MODEL_KEY, '')
-  model = models.get(chosen_model) or app.config.get("default_model") if models else None
+  chosen_model = ainame or session.get(SETTING_MODEL_KEY, '')
+  model = models.get(chosen_model) or models.get(app.config.get("default_model_name")) if models else None
   if model is None:
     flash("No model means we can't have an assistant.", category='error')
     return "Model not found", 500
@@ -360,9 +362,10 @@ def message_new():
   if api_key is None:
     flash("No API key means we can't contact the assistant.", category='error')
     return "No API key configured", 500
-  client = OpenAI(
+  base_url = model.get('base_url')
+  client = openai.OpenAI(
     api_key=api_key,
-    base_url=model.get('url')
+    base_url=base_url
   )
   context_messages = chat_get_context(chat_id, ncontext=3, db=db)
   messages = [
@@ -375,19 +378,23 @@ def message_new():
     role="system",
     content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
   messages.append(system_msg)
-  response = client.chat.completions.create(
-    model=chosen_model,
-    messages=messages,
-    max_tokens=2000
-  )
-  # TODO: check if response was ok
-  assistant_message = response.choices[0].message.content
-  _ = chat_insert_message(chat_id, "assistant", assistant_message)
-  return render_template(
-    "assistant_message.html",
-    ainame="AI", # TODO: include AI name when we have more options
-    assistant_message=assistant_message
-  )
+  try:
+    response = client.chat.completions.create(
+      model=model.get('name', chosen_model),
+      messages=messages,
+      max_tokens=2000
+    )
+    # TODO: check if response was ok
+    assistant_message = response.choices[0].message.content
+    _ = chat_insert_message(chat_id, "assistant", assistant_message)
+    return render_template(
+      "assistant_message.html",
+      ainame=chosen_model,
+      assistant_message=assistant_message,
+    )
+  except openai.AuthenticationError:
+    app.logger.error(f'Could not authenticate with {api_key[:5]} to {base_url}')
+    return render_template('error.html', what="Could not authenticate to LLM server"), 500
 
 class NotAuthorized(Exception):
   "Raised when the user does not have the authority to perform some action"

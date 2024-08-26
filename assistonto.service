@@ -1,3 +1,5 @@
+# debug with sudo journalctl -xeu assistonto.service
+# or with docker exec -it <container-id> python
 [Unit]
 Description=Gunicorn serving AssistOnto (container)
 After=network.target
@@ -7,7 +9,6 @@ After=nginx.service
 WorkingDirectory=/opt/assistonto
 Restart=always
 # run before
-# docker run --detach --name assistonto_server -p 8080:8080 --env-file /opt/assistonto/assistonto.env -v /opt/assistonto/assistonto.db:/opt/assistonto/assistonto.db localhost/assistonto
 ExecStart=/usr/bin/docker start -a assistonto_server
 ExecStop=/usr/bin/docker stop -t 5 assistonto_server
 RestartSec=6

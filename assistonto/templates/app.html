@@ -14,15 +14,16 @@
     <div id="ai-input" class="flex-row">
       <textarea id="userInput" class="input"
                 name="user_message"
-                placeholder="Message assistant"></textarea>
+                placeholder="Message assistant ({{ainame}})"></textarea>
       <button id="userInputButton"
               class="button"
               hx-post="{{url_for('message_new')}}"
               hx-trigger="click delay:50ms"
-              hx-include="#userInput"
+              hx-include="#userInput, #ainame"
               hx-target="#messages"
               hx-swap="beforeend"
               >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
+      <input class='nodisplay' id='ainame' name='ainame' value='{{ainame}}'> {# element used solely to keep the ai model name being used #}
       <span class="nodisplay"
             {# element used solely for triggering another event on click #}
             hx-post="{{url_for('render_user_message')}}"

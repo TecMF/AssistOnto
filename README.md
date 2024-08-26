@@ -17,10 +17,10 @@ Build container image and transfer it to server:
 
 Then delete old container, and run the new one:
 
-    systemctl stop assistonto
+    service assistonto stop
     docker rm assistonto_server
     docker run --detach --name assistonto_server -p 8080:8080 --env-file /opt/assistonto/assistonto.env -v /opt/assistonto/assistonto.db:/opt/assistonto/assistonto.db localhost/assistonto
-    systemctl start assistonto
+    service assistonto start
 
 Run SQLite on the server:
     sudo -u assistonto ./sqlite3 /opt/assistonto/assistonto.db
