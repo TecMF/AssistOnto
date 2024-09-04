@@ -70,6 +70,7 @@ def close_connection(exception):
 #### Templating
 HTML_WHITELIST = {
   'div': [], 'p': [], 'pre':[], 'code': ['class'],
+  'ol': [], 'ul': [], 'li': [],
   # 'a':['href'], # unsafe:
   'blockquote': [], 'em': [], 'strong': [], 'h1':[], 'h2':[], 'h3':[]
 }
