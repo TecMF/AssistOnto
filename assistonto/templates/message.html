@@ -1,16 +1,30 @@
-{% macro message(role, content, name) -%}
+{% macro message(message_id, role, content, name) -%}
 <div data-role="{{role}}">
   {% if name is not none %}
   <div class="font-semibold">{{name}}</div>
   {% endif %}
   <div>{{sane_markdown(content)|safe}}</div>
-  {% if role == 'assistant' %}
-  <details class='font-sm display-hover'>
-    <summary class='nobullet'>(source)</summary>
-    <pre>
-      {{content}}
-    </pre>
-  </details>
-  {% endif %}
+  <ul class="nobullet flex-row gap1em flex-justify-start font-sm">
+    {% if role == 'assistant' %}
+    <li>
+      <details>
+        <summary class='nobullet'>(source)</summary>
+        <pre>
+          {{content}}
+        </pre>
+      </details>
+    </li>
+    {% endif %}
+    {% if message_id is not none %}
+    <li>
+      <a class="nodecor sm-padding clickable"
+         hx-trigger="click"
+         hx-get="{{url_for('message_delete')}}"
+         hx-vals='{"message_id": {{message_id | tojson}}}'
+         hx-target="closest div[data-role]"
+         hx-swap="outerHTML" title="Delete">(delete)</a>
+    </li>
+    {% endif %}
+  </ul>
 </div>
 {%- endmacro %}

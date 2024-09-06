@@ -242,6 +242,10 @@ def post_settings():
     return render_template("ai_choice.html", ainame=new_model_name)
   return '', 204 # no content -> no swap
 
+USER_CHATS_QUERY = """SELECT id, subject
+FROM chats
+WHERE user_id = :user_id"""
+
 @app.route('/chat', methods=["GET"])
 @app.route('/chat/<int:chat_id>', methods=["GET"])
 @login_required
@@ -249,10 +253,7 @@ def view_app(chat_id=None):
   db = get_db()
   user_id = g._user_id
   user_chats = db_query_db(
-      db,
-      """SELECT id, subject
-FROM chats
-WHERE user_id = :user_id""",
+      db, USER_CHATS_QUERY,
       dict(user_id=user_id)
     )
   # app.logger.info(user_chats)
@@ -318,12 +319,29 @@ def chat_insert_message(chat_id, role, content, db=None):
     message_id = res['message_id']
     return message_id
 
+def chat_delete_message(user_id, message_id, db=None):
+  if db is None:
+    db = get_db()
+  res = db_query_db(
+    db,
+    f"""UPDATE messages
+    SET when_deleted = unixepoch()
+    WHERE id = :message_id AND chat_id IN (SELECT id FROM ({USER_CHATS_QUERY}))
+    RETURNING id AS message_id""",
+    dict(message_id=message_id, user_id=user_id),
+    one=True)
+  if res is None:
+    db.rollback()
+  else:
+    db.commit()
+
+
 def chat_get_context(chat_id, ncontext=3, db=None):
   if db is None:
     db = get_db()
   res = db_query_db(
     db,
-    """SELECT content, user_msg
+    """SELECT id, content, user_msg
 FROM (SELECT id, content, user_msg, when_created
 FROM messages
 WHERE chat_id = :chat_id AND when_deleted IS NULL
@@ -358,6 +376,7 @@ def message_new():
   if chat_id is None:
     return redirect(url_for('view_app'))
   db = get_db()
+  # save user message
   _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
   models = app.config.get("MODELS", {})
@@ -380,7 +399,8 @@ def message_new():
   messages = [
     dict(
       role="system",
-      content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}""")
+      content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""
+      )
   ]
   context_messages = it.dropwhile(
     # remove initial assistant messages since we have to start with
@@ -391,12 +411,12 @@ def message_new():
   # add context messages without repeated messages (we must have
   # messages following the user/assistant/user order)
   first_msg = next(context_messages)
-  messages.append({"role":'user', "content": first_msg['content']})
+  messages.append({"role": 'user', "content": first_msg['content']})
   messages.extend([
-    dict(role="user" if usr_msg == 1 else "assistant", content=content)
-    for (_, prev_user_msg), (content, usr_msg) in it.pairwise(it.chain([first_msg], context_messages)) # include first message again or we skip a message
+    dict(role="user" if curr_msg['user_msg'] == 1 else "assistant", content=curr_msg['content'])
+    for prev_msg, curr_msg in it.pairwise(it.chain([first_msg], context_messages)) # include first message again or we skip a message
     # don't send two messages from the same person in a row
-    if usr_msg != prev_user_msg
+    if curr_msg['user_msg'] != prev_msg['user_msg']
   ])
   try:
     response = client.chat.completions.create(
@@ -406,19 +426,32 @@ def message_new():
     )
     # TODO: check if response was ok
     assistant_message = response.choices[0].message.content
-    _ = chat_insert_message(chat_id, "assistant", assistant_message)
+    assistant_message_id = chat_insert_message(chat_id, "assistant", assistant_message)
     return render_template(
       "assistant_message.html",
       ainame=chosen_model,
       assistant_message=assistant_message,
+      assistant_message_id=assistant_message_id,
     )
   except openai.AuthenticationError:
     app.logger.error(f'Could not authenticate with key {api_key[:5]}… to {base_url} (model={model})')
     return render_template('error.html', what="Could not authenticate to LLM server"), 500
 
+
 class NotAuthorized(Exception):
   "Raised when the user does not have the authority to perform some action"
   pass
+
+@app.route('/deleted_message', methods=["GET"])
+@login_required
+def message_delete():
+  message_id = request.args.get('message_id')
+  if message_id is None:
+    return "", 204 # no swap
+  _ = chat_delete_message(g._user_id, message_id)
+  return "" # return empty
+
+
 
 @app.errorhandler(NotAuthorized)
 def handle_bad_request(e):

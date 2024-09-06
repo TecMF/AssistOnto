@@ -9,7 +9,7 @@
   <div id="ai-chat" class="flex-column">
     <div id="messages" class="flex-column">
       {% for msg in chat_messages %}
-      {{ message('user' if msg.user_msg else 'assistant', msg.content, 'AI' if not msg.user_msg else None) }}
+      {{ message(msg.id, 'user' if msg.user_msg else 'assistant', msg.content, 'AI' if not msg.user_msg else None) }}
       {% endfor %}
     </div>
     <div id="ai-input" class="flex-row">
