@@ -152,7 +152,6 @@ def post_login():
 
 @app.route('/register', methods=['GET'])
 def view_register():
-  # TODO: we don't want open registering
   return render_template('register.html')
 
 @app.route('/register', methods=['POST'])
@@ -265,7 +264,7 @@ WHERE user_id = :user_id""",
       """SELECT chat_id
 FROM messages INNER JOIN chats ON messages.chat_id = chats.id
 WHERE user_id = :user_id
-ORDER BY tstamp DESC
+ORDER BY when_created DESC
 LIMIT 1""",
       dict(user_id=user_id),
       one = True
@@ -307,7 +306,7 @@ def chat_insert_message(chat_id, role, content, db=None):
     db = get_db()
   res = db_query_db(
     db,
-    """INSERT INTO messages(chat_id, user_msg, content, tstamp)
+    """INSERT INTO messages(chat_id, user_msg, content, when_created)
   VALUES (:chat_id, :user_msg, :content, unixepoch())
   RETURNING id AS message_id""",
     dict(chat_id=chat_id, user_msg=(role == "user"), content=content),
@@ -325,18 +324,21 @@ def chat_get_context(chat_id, ncontext=3, db=None):
   res = db_query_db(
     db,
     """SELECT content, user_msg
-FROM (SELECT content, user_msg, tstamp
+FROM (SELECT id, content, user_msg, when_created
 FROM messages
-WHERE chat_id = :chat_id
-ORDER BY tstamp DESC
+WHERE chat_id = :chat_id AND when_deleted IS NULL
+ORDER BY when_created DESC
 LIMIT :ncontext)
-ORDER BY tstamp ASC""",
+ORDER BY when_created ASC""",
     dict(chat_id=chat_id, ncontext=ncontext))
   return res
 
 @app.route('/render-user-message', methods=["POST"])
 @login_required
 def render_user_message():
+  # Called when user sends a message in the interface and we want to
+  # render it instantly, without having it saved on the DB (this
+  # might not be ideal, however)
   user_message = request.form.get('user_message', None)
   if user_message is None:
     return "" # no HTML response

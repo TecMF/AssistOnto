@@ -30,7 +30,8 @@ CREATE TABLE messages (
   -- is user message: can't use BOOLEAN with strict
   user_msg INTEGER,
   content TEXT NOT NULL,
-  tstamp INTEGER NOT NULL,
+  when_created INTEGER NOT NULL,
+  when_deleted INTEGER,
   FOREIGN KEY(chat_id)
     REFERENCES chats(id)
 ) STRICT;
