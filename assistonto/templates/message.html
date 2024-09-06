@@ -4,5 +4,13 @@
   <div class="font-semibold">{{name}}</div>
   {% endif %}
   <div>{{sane_markdown(content)|safe}}</div>
+  {% if role == 'assistant' %}
+  <details class='font-sm display-hover'>
+    <summary class='nobullet'>(source)</summary>
+    <pre>
+      {{content}}
+    </pre>
+  </details>
+  {% endif %}
 </div>
 {%- endmacro %}

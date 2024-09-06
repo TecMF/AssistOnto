@@ -72,9 +72,11 @@ HTML_WHITELIST = {
   'div': [], 'p': [], 'pre':[], 'code': ['class'],
   'ol': [], 'ul': [], 'li': [],
   # 'a':['href'], # unsafe:
+  'td': [], 'tr': [], 'th': [], 'table': [],
   'blockquote': [], 'em': [], 'strong': [], 'h1':[], 'h2':[], 'h3':[]
 }
-app.add_template_global(lambda text: md.markdown(text, extensions=['fenced_code', SanitizeExtension(HTML_WHITELIST)]), name='sane_markdown')
+app.add_template_global(lambda text: md.markdown(text, extensions=['fenced_code', 'tables', SanitizeExtension(HTML_WHITELIST)]), name='sane_markdown')
+
 
 #### Authentication
 
