@@ -20,11 +20,11 @@
               class="button"
               hx-post="{{url_for('message_new')}}"
               hx-trigger="click delay:50ms"
-              hx-include="#userInput, #ainame"
+              hx-vals='{"ainame": {{ainame | tojson}}}'
+              hx-include="#userInput"
               hx-target="#messages"
               hx-swap="beforeend"
               >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
-      {{ai_choice(ainame)}}
       <span class="nodisplay"
             {# element used solely for triggering another event on click #}
             hx-post="{{url_for('render_user_message')}}"
