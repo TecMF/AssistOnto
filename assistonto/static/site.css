@@ -56,6 +56,10 @@ div#messages > div[data-role="user"] {
     display: none;
 }
 
+.invisible {
+    visibility: hidden;
+}
+
 #ai-input {
     margin-top: 1em;
 }

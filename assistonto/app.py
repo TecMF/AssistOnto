@@ -2,6 +2,7 @@ from flask import Flask, url_for, render_template, redirect, request, flash, g, 
 # to create new function decorator:
 from functools import wraps
 import itertools as it
+import json
 # to increase password security
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -76,6 +77,23 @@ HTML_WHITELIST = {
   'blockquote': [], 'em': [], 'strong': [], 'h1':[], 'h2':[], 'h3':[]
 }
 app.add_template_global(lambda text: md.markdown(text, extensions=['fenced_code', 'tables', SanitizeExtension(HTML_WHITELIST)]), name='sane_markdown')
+
+#### User configuration
+
+USER_DEFAULT_CONTEXT_SIZE = 3
+
+def user_config(new=None):
+  models = [model_name for model_name in app.config.get("MODELS")]
+  config = {
+    "chosen_model": app.config.get("default_model_name") \
+      or next(iter(models)) if models else None,
+    "models": models,
+    "context_size": USER_DEFAULT_CONTEXT_SIZE,
+  }
+  if new is None:
+    return config
+  config.update(new)
+  return config
 
 
 #### Authentication
@@ -208,9 +226,8 @@ def logout():
   g._user_id = None
   return redirect(url_for('index'))
 
-#### Business Routes
 
-SETTING_MODEL_KEY = "setting-model"
+#### Business Routes
 
 @app.route("/", methods=["GET"])
 def index():
@@ -218,33 +235,49 @@ def index():
     return redirect(url_for('view_app'))
   return render_template("index.html")
 
-@app.route('/settings', methods=["GET"])
-@login_required
-def view_settings():
-  models = app.config.get("MODELS")
-  def_model = app.config.get("default_model_name") or next(iter(models)) if models else None
-  if def_model is None:
-    return "No models available", 500
-  return render_template(
-    "settings.html",
-    chosen_model=session.get(SETTING_MODEL_KEY, def_model),
-    other_models=models,
-  )
 
 @app.route('/settings', methods=["POST"])
 @login_required
 def post_settings():
   new_model_name = request.form['model']
   models = app.config.get("MODELS")
-  if new_model_name != session.get(SETTING_MODEL_KEY) \
-     and new_model_name in models:
-    session[SETTING_MODEL_KEY] = new_model_name
-    return render_template("ai_choice.html", ainame=new_model_name)
+  config = {}
+  ok = True
+  if new_model_name not in models:
+    ok = False
+  else:
+    config['chosen_model'] = new_model_name
+  if (context_size_str := request.form.get('context_size')) is None \
+    or not context_size_str.isdigit():
+    ok = False
+  else:
+    config['context_size'] = int(context_size_str)
+  user_id = g._user_id
+  # all config values are ok
+  if not ok:
+    app.logger.info(f'Invalid configuration submitted by {user_id}')
+    return '', 204
+  db = get_db()
+  r = db_query_db(
+      db,
+      """INSERT INTO settings(user_id, config_json)
+      VALUES (:user_id, :config_json)
+      ON CONFLICT(user_id) DO UPDATE SET config_json=excluded.config_json
+      RETURNING user_id""",
+      dict(user_id=user_id, config_json=json.dumps(config)),
+      one = True
+    )
+  if r:
+    db.commit()
+  else:
+    db.rollback()
   return '', 204 # no content -> no swap
+
 
 USER_CHATS_QUERY = """SELECT id, subject
 FROM chats
 WHERE user_id = :user_id"""
+
 
 @app.route('/chat', methods=["GET"])
 @app.route('/chat/<int:chat_id>', methods=["GET"])
@@ -276,13 +309,25 @@ LIMIT 1""",
     else:
       chat_id = r['chat_id']
   session[USER_CHAT_KEY] = chat_id
+  r = db_query_db(
+      db,
+      """SELECT config_json
+FROM settings
+WHERE user_id = :user_id
+LIMIT 1""",
+      dict(user_id=user_id),
+      one = True
+    )
+  initial_config = None
+  if r:
+    initial_config = json.loads(r['config_json'])
   chat_messages = chat_get_context(chat_id, ncontext=app.config.get('MAX_MESSAGES_SHOWN', 100))
   return render_template(
     "app.html",
     username=g._username,
     chat_messages=chat_messages,
     user_chats=user_chats,
-    ainame=session.get(SETTING_MODEL_KEY) or app.config.get("default_model_name"),
+    initial_config=user_config(initial_config),
   )
 
 def chat_new_chat(user_id, subject=None, db=None):
@@ -369,7 +414,7 @@ def render_user_message():
 @login_required
 def message_new():
   user_message = request.form.get('user_message', None)
-  ainame = request.form.get('ainame', None)
+  chosen_model = request.form.get('model', None)
   if user_message is None:
     return "" # no HTML response
   chat_id = session.get(USER_CHAT_KEY)
@@ -380,7 +425,6 @@ def message_new():
   _ = chat_insert_message(chat_id, "user", user_message, db=db)
   # get answer from AI
   models = app.config.get("MODELS", {})
-  chosen_model = ainame or session.get(SETTING_MODEL_KEY, '')
   model = models.get(chosen_model) or models.get(app.config.get("default_model_name")) if models else None
   if model is None:
     flash("No model means we can't have an assistant.", category='error')
@@ -402,11 +446,13 @@ def message_new():
       content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""
       )
   ]
+  context_size = int(context_size_str) if (context_size_str := request.form.get('context_size')) is not None \
+    and context_size_str.isdigit() else USER_DEFAULT_CONTEXT_SIZE
   context_messages = it.dropwhile(
     # remove initial assistant messages since we have to start with
     # user interactions
     lambda m: m['user_msg'] == 0,
-    chat_get_context(chat_id, ncontext=3, db=db)
+    chat_get_context(chat_id, ncontext=context_size, db=db)
   )
   # add context messages without repeated messages (we must have
   # messages following the user/assistant/user order)
@@ -436,11 +482,15 @@ def message_new():
   except openai.AuthenticationError:
     app.logger.error(f'Could not authenticate with key {api_key[:5]}… to {base_url} (model={model})')
     return render_template('error.html', what="Could not authenticate to LLM server"), 500
+  except openai.APITimeoutError:
+    app.logger.error(f'Request to server timed out')
+    return render_template('error.html', what="Server timed out"), 500
 
 
 class NotAuthorized(Exception):
   "Raised when the user does not have the authority to perform some action"
   pass
+
 
 @app.route('/deleted_message', methods=["GET"])
 @login_required

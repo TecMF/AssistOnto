@@ -34,7 +34,7 @@
         {% else %}
         <li>
           <a class="nodecor sm-padding less-emphasis" href="{{url_for('index')}}">{{ g._username }}</a>
-          <a class="nodecor sm-padding clickable" hx-trigger="click" hx-get="{{url_for('view_settings')}}" hx-target="body" hx-swap="beforeend" title="Settings">⚙</a>
+          <a class="nodecor sm-padding clickable" _="on click remove .closing from #settings-modal then show #settings-modal with visibility" title="Settings">⚙</a>
           <a class="nodecor sm-padding" href="{{url_for('logout')}}">Log Out</a>
         </li>
         {% endif %}

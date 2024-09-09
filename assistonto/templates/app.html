@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% from 'message.html' import message %}
-{% from 'ainame.html' import ai_choice %}
+{% from 'settings.html' import settings %}
 
 {% block content %}
 <script defer="true" src="{{url_for('static', filename='main.js')}}" type="text/javascript"></script>
@@ -20,8 +20,7 @@
               class="button"
               hx-post="{{url_for('message_new')}}"
               hx-trigger="click delay:50ms"
-              hx-vals='{"ainame": {{ainame | tojson}}}'
-              hx-include="#userInput"
+              hx-include="#userInput, #settings"
               hx-target="#messages"
               hx-swap="beforeend"
               >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->
@@ -40,4 +39,5 @@
     <textarea id="ontology" class="input" name="user_ontology" data-changed="false" placeholder="# Your ontology goes here"></textarea>
   </div>
 </div>
+{{ settings(initial_config, True) }}
 {% endblock %}

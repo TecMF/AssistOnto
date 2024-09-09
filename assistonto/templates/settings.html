@@ -1,9 +1,13 @@
-<div id="settings" class="modal" _="on closeModal add .closing then wait for animationend then remove me">
+{% macro settings(config, hide) -%}
+<div id="settings-modal" class="modal invisible" _="on closeModal add .closing then wait for animationend then hide me with visibility">
   <div class="modal-underlay" _="on click trigger closeModal"></div>
   <div class="modal-content">
     <h1>Settings</h1>
-    <form hx-post="{{url_for('post_settings')}}" hx-swap="outerHTML" hx-target="#ainame">
-      <div class="sm-padding">
+    {% set other_models = config.models %}
+    {% set chosen_model = config.chosen_model %}
+    {% set context_size = config.context_size %}
+    <form id='settings' name="settings" class="sm-padding" hx-post="{{url_for('post_settings')}}" hx-swap="none">
+      <div>
         <label>Model:</label>
         <select name="model" id="model-select">
           {% for model in other_models %}
@@ -11,7 +15,13 @@
           {% endfor %}
         </select>
       </div>
+      <div>
+        <label for="context_size">Context size (0-10 messages):</label>
+        <input type="number" id="context_size" name="context_size" min="0" max="10" value="{{context_size}}"/>
+      </div>
       <button class="button sm-padding" _="on click trigger closeModal" type="submit">Save</button>
     </form>
   </div>
 </div>
+{%- endmacro %}
+{{ settings(config, hide) }}
