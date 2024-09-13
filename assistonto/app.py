@@ -403,8 +403,8 @@ def render_user_message():
   # render it instantly, without having it saved on the DB (this
   # might not be ideal, however)
   user_message = request.form.get('user_message', None)
-  if user_message is None:
-    return "" # no HTML response
+  if user_message is None or len(user_message.strip()) == 0:
+    return "", 204
   return render_template(
     "user_message.html",
     user_message=user_message
@@ -415,8 +415,8 @@ def render_user_message():
 def message_new():
   user_message = request.form.get('user_message', None)
   chosen_model = request.form.get('model', None)
-  if user_message is None:
-    return "" # no HTML response
+  if user_message is None or len(user_message.strip()) == 0:
+    return "", 204 # no swap
   chat_id = session.get(USER_CHAT_KEY)
   if chat_id is None:
     return redirect(url_for('view_app'))
