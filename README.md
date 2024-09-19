@@ -25,6 +25,7 @@ Then delete old container, and run the new one:
 To make deployment faster, I have been mounting the code as a volume
 inside the container instead of deploying. This way we only need to
 deploy when we change or update dependencies.
+    -v /home/bclaro/AssistOnto/assistonto:/assistonto
 
 Run SQLite on the server:
     sudo -u assistonto ./sqlite3 /opt/assistonto/assistonto.db

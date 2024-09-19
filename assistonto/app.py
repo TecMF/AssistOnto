@@ -8,6 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 import openai
 import sqlite3
+import rdflib
+import owlrl
 import markdown as md
 from sanitize_md import SanitizeExtension
 import os
@@ -490,6 +492,27 @@ def message_new():
 class NotAuthorized(Exception):
   "Raised when the user does not have the authority to perform some action"
   pass
+
+@app.route('/check-ontology', methods=['POST'])
+@login_required
+def check_ontology():
+  g = rdflib.Graph()
+  ontology_str = request.form.get('ontology', None)
+  if ontology_str is None:
+    return '', 204
+  g.parse(data=ontology_str)
+  owlrl.DeductiveClosure(owlrl.OWLRL_Semantics).expand(g)
+  query = """
+  prefix ns1: <http://www.daml.org/2002/03/agents/agent-ont#>
+
+  SELECT ?error ?errorMessage
+  WHERE {
+    ?error a ns1:ErrorMessage .
+    ?error ns1:error ?errorMessage .
+  }
+  """
+  results = graphToExpand.query(query)
+  return render_template('owl-reasoner-results.html', errors=results)
 
 
 @app.route('/deleted_message', methods=["GET"])
