@@ -1,76 +1,24 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "assistonto"
-dynamic = ["version", "dependencies"]
-description = ''
+version = "0.1.0"
+description = ""
+authors = ["Bruno Cuconato"]
 readme = "README.md"
-requires-python = ">=3.8"
-keywords = []
-authors = [
-  { name = "bruno cuconato (@odanoburu)" },
-]
-classifiers = [
-  "Development Status :: 4 - Beta",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: Implementation :: CPython",
-]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+[tool.poetry.dependencies]
+python = "^3.12"
+Flask="~3.0.2"
+gunicorn="~22.0.0"
+Markdown="~3.5.2"
+openai="~1.30"
+owlrl="~6.0.2"
 
-[tool.hatch.version]
-path = "assistonto/__about__.py"
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.5"
 
-[tool.hatch.build.targets.sdist]
-exclude = [
-  "/.github",
-]
+[tool.poetry.scripts]
+assistonto = "assistonto.__main__:main"
 
-[tool.hatch.envs.dev]
-dependencies = [
-  "ruff",
-]
-[tool.hatch.envs.dev.scripts]
-server = "python . server --port 8000 --db-path ../assistonto.db" # run from assistonto directory
-check = "ruff check assistonto"
-
-[tool.hatch.build.targets.wheel]
-only-packages = true
-# packages = ["assistonto/src"]
-
-# [project.scripts]
-# assistonto = "assistonto.__main__:main"
-
-#[tool.hatch.build.targets.app]
-
-# [tool.hatch.envs.types]
-# extra-dependencies = [
-#   "mypy>=1.0.0",
-# ]
-
-# [tool.coverage.run]
-# source_pkgs = ["assistonto", "tests"]
-# branch = true
-# parallel = true
-# omit = [
-#   "assistonto/src/__about__.py",
-# ]
-
-# [tool.coverage.paths]
-# assistonto = ["assistonto/src", "*/assistonto/assistonto/src"]
-# tests = ["tests", "*/assistonto/tests"]
-
-# [tool.coverage.report]
-# exclude_lines = [
-#   "no cov",
-#   "if __name__ == .__main__.:",
-#   "if TYPE_CHECKING:",
-# ]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,5 +1,5 @@
 check:
-	hatch run dev:check
+	poetry run ruff check .
 
 build:
 	rm -rf assistonto/__pycache__/

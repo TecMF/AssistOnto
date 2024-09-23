@@ -2,16 +2,16 @@
 
 ## Test locally
 
-    hatch shell # we use hatch for development (see pyproject.toml)
-    # run from the assistonto directory, with (test) assistonto.db
-    # in root directory, and the variables in dev.env in the environment
-    hatch run dev:server
+    poetry shell # we use poetry for development (see pyproject.toml)
+    # run from the root directory, with (test) assistonto.db
+    # in assistonto directory, and the variables in dev.env in the environment
+    poetry run assistonto server
 
 ## Build & Deploy
 
 Build container image and transfer it to server:
 
-    rm -r assistonto/__pycache__/
+    rm -r src/assistonto/__pycache__/
     podman build -t assistonto .
     podman save localhost/assistonto | bzip2 | ssh vm-assistonto docker load
 

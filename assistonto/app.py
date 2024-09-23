@@ -485,7 +485,7 @@ def message_new():
     app.logger.error(f'Could not authenticate with key {api_key[:5]}… to {base_url} (model={model})')
     return render_template('error.html', what="Could not authenticate to LLM server"), 500
   except openai.APITimeoutError:
-    app.logger.error(f'Request to server timed out')
+    app.logger.error('Request to server timed out')
     return render_template('error.html', what="Server timed out"), 500
 
 
