@@ -440,7 +440,7 @@ def message_new():
     api_key=api_key,
     base_url=base_url
   )
-  ontology = request.form.get('ontology', None)
+  ontology = request.form.get('user-ontology', None)
   ontology_message = f"The current ontology is:\n{ontology}" if ontology else ""
   messages = [
     dict(
@@ -497,7 +497,7 @@ class NotAuthorized(Exception):
 @login_required
 def check_ontology():
   g = rdflib.Graph()
-  ontology_str = request.form.get('ontology', None)
+  ontology_str = request.form.get('user-ontology', None)
   if ontology_str is None:
     return '', 204
   g.parse(data=ontology_str)
@@ -511,8 +511,8 @@ def check_ontology():
     ?error ns1:error ?errorMessage .
   }
   """
-  results = graphToExpand.query(query)
-  return render_template('owl-reasoner-results.html', errors=results)
+  inconsistencies = g.query(query)
+  return render_template('owl-reasoner-results.html', inconsistencies=inconsistencies)
 
 
 @app.route('/deleted_message', methods=["GET"])

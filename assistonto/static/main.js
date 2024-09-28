@@ -14,7 +14,7 @@
   userInputButton.addEventListener('htmx:configRequest', function (evt) {
     if (ontologyText.getAttribute("data-changed") === "true") {
       // send ontology along with request if it changed
-      evt.detail.parameters['ontology'] = ontologyText.value;
+      evt.detail.parameters['user-ontology'] = ontologyText.value;
     }
     // reset input and disable button until we get a response or an error
     userInputElem.value = ''; // reset content

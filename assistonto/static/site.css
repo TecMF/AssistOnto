@@ -27,24 +27,26 @@ body {
 
 }
 
-div#ai-chat {
+#interaction-area > div {
     max-width: 50vw;
-    flex: 1;
     margin-inline: 1em;
 }
 
-div#messages {
-    width: 95%;
+#messages {
     margin-inline: 1em;
     overflow-y: scroll;
     height: calc(95vh - 7em);
 }
 
-div#messages > div {
+#ontology-inconsistencies {
+    height: calc(95vh - 7em);
+}
+
+#messages > div {
   padding: 0.4em;
 }
 
-div#messages > div[data-role="user"] {
+#messages > div[data-role="user"] {
     align-self: end;
     margin-left: 2em;
     width: fit-content;
@@ -62,16 +64,13 @@ div#messages > div[data-role="user"] {
 
 #ai-input {
     margin-top: 1em;
+    margin-right: 1em;
 }
 
 #userInput {
     width: 90%;
     max-height: var(--chat-input-height);
     margin-right: 0.5em;
-}
-
-div#ontology-editor {
-    flex: 1;
 }
 
 textarea#ontology {
@@ -128,6 +127,11 @@ textarea {
 
 .clickable {
     cursor: pointer;
+}
+
+input, select {
+    font-size: inherit;
+    font-family: inherit;
 }
 
 button.button {
@@ -289,4 +293,60 @@ pre {
 
 .font-sm {
     font-size: 14px;
+}
+
+.grid-twoside {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5em;
+}
+
+.relative {
+    position: relative;
+}
+
+.stacked {
+    position: absolute;
+    z-index: 1;
+}
+
+.stacked[data-stacked-hidden="true"] {
+    z-index: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.sm-margin-r {
+    margin-right: 1em;
+}
+
+.sm-margin-l {
+    margin-left: 1em;
+}
+
+.togglable:not(.chosen) {
+    opacity: 30%;
+}
+
+.break-spaces {
+    white-space: break-spaces;
+}
+
+.autophrase {
+    word-break: auto-phrase;
+}
+
+.grid {
+    display: grid;
+}
+.grid-center {
+    place-content: center;
+}
+
+.inline-block {
+    display: inline-block;
 }
