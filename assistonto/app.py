@@ -445,7 +445,7 @@ def message_new():
   messages = [
     dict(
       role="system",
-      content=f"""You are helpful assistant in the domain of CyberSecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""
+      content=f"""You are helpful assistant in the domain of cybersecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""
       )
   ]
   context_size = int(context_size_str) if (context_size_str := request.form.get('context_size')) is not None \
@@ -500,7 +500,10 @@ def check_ontology():
   ontology_str = request.form.get('user-ontology', None)
   if ontology_str is None:
     return '', 204
-  g.parse(data=ontology_str)
+  try:
+    g.parse(data=ontology_str)
+  except rdflib.exceptions.ParserError as e:
+    return render_template('owl-reasoner-results.html', inconsistencies=[e.msg])
   owlrl.DeductiveClosure(owlrl.OWLRL_Semantics).expand(g)
   query = """
   prefix ns1: <http://www.daml.org/2002/03/agents/agent-ont#>

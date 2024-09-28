@@ -320,6 +320,10 @@ pre {
     flex-grow: 1;
 }
 
+.flex-grow-100 {
+    flex-grow: 100;
+}
+
 .sm-margin-r {
     margin-right: 1em;
 }

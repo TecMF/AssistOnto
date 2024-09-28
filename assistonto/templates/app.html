@@ -31,11 +31,12 @@
         <textarea id="userInput" class="input"
                   name="user_message"
                   placeholder="Message assistant"></textarea>
+        <!-- also includes ontology in request with JS if it has changed -->
         <button id="userInputButton"
                 class="button"
                 hx-post="{{url_for('message_new')}}"
                 hx-trigger="click delay:50ms"
-                hx-include="#userInput, #settings" <!-- also includes ontology with JS if it has changed -->
+                hx-include="#userInput, #settings"
                 hx-target="#messages"
                 hx-swap="beforeend"
                 >➢</button> <!-- TODO: use https://raw.githubusercontent.com/SamHerbert/SVG-Loaders/master/svg-loaders/rings.svg -->

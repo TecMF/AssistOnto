@@ -15,7 +15,7 @@
   <body>
     <nav class="nopadding sm-margin-r borderbox">
       <ul class="nobullet flex-row gap1em flex-justify-end">
-        <li>
+        <li class="flex-grow">
           <a class="nodecor sm-padding" href="{{ url_for('index') }}">
             AssistOnto
           </a>
@@ -32,7 +32,7 @@
           </a>
         </li>
         {% else %}
-        <li class="flex-grow"> <!-- push the other elements -->
+        <li class="flex-grow-100"> <!-- push the other elements -->
           <a class="nodecor sm-padding clickable togglable chosen"
                   _="on click
                      add @data-stacked-hidden='true' to #reasoner
