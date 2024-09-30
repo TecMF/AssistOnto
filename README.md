@@ -11,7 +11,7 @@
 
 Build container image and transfer it to server:
 
-    rm -r src/assistonto/__pycache__/
+    rm -r assistonto/__pycache__/
     podman build -t assistonto .
     podman save localhost/assistonto | bzip2 | ssh vm-assistonto docker load
 
