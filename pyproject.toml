@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Bruno Cuconato"]
 readme = "README.md"
+packages = [{ include = "assistonto", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"

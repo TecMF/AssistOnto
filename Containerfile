@@ -1,18 +1,27 @@
-# to test locally: podman run --env-file dev.env -it --rm -p 8080:8080 assistonto # but api_key might need to be passed directly
+# to test locally: podman run --rm -it --name assistonto_server -p 8080:8080 --env-file assistonto.env -v ~/sites/assistonto/assistonto.db:/opt/assistonto/assistonto.db:Z -v ~/sites/assistonto/assistonto_docs.db:/opt/assistonto/assistonto_docs.db:Z -v ~/secrets/openai.key:/opt/assistonto/openai.key:Z localhost/assistonto
+
 FROM python:3
 
-COPY requirements.txt /
+WORKDIR /assistonto
+
+COPY requirements.txt .
 
 RUN pip3 install --upgrade pip
 
 RUN pip3 install -r requirements.txt
 
-COPY . /
+COPY src src/
 
-RUN pip3 install .
+COPY templates templates/
 
-WORKDIR /assistonto
+COPY static static/
+
+COPY README.md .
+
+COPY pyproject.toml .
+
+RUN pip3 install -e .
 
 EXPOSE 8080
 
-CMD ["gunicorn", "--config", "gunicorn_config.py", "app:app"]
+CMD ["gunicorn", "--config", "src/assistonto/gunicorn_config.py", "src.assistonto.app:app"]
