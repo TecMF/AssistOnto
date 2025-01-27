@@ -12,6 +12,7 @@ gunicorn="~22.0.0"
 Markdown="~3.5.2"
 openai="~1.30"
 owlrl="~6.0.2"
+chromadb = "^0.5.20"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.5"

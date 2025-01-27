@@ -1,5 +1,17 @@
 # AssistOnto
 
+## Setting up RAG
+
+Create a directory named `my_doc_dir` filled with plaintext documents,
+then call
+
+    poetry run assistonto docs --docdb-path my_assistonto_docs.db --add my_doc_dir
+
+to add the documents to the vector database, with their base
+filenames (without extension) as IDs. Then specify
+`my_assistonto_docs.db` using the `ASSISTONTO_DOCDB_PATH`
+environment variable.
+
 ## Test locally
 
     poetry shell # we use poetry for development (see pyproject.toml)
@@ -37,3 +49,4 @@ Use the following environment variables:
     ASSISTONTO_SECRET_KEY=dkfjkdgj # Flask secret key
     ASSISTONTO_MODELS='{"<model_name>": {"default": "true", "url": "<model_url>", "credentials": "<api_key>"}, "<another_model": {"credentials": {"file": "<file_containing_api_key"}}}'
     ASSISTONTO_MAX_MESSAGES_SHOWN=100
+    ASSISTONTO_DOCDB_PATH=assistonto_docs.db

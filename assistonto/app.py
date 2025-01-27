@@ -11,7 +11,8 @@ import sqlite3
 import rdflib
 import owlrl
 import markdown as md
-from sanitize_md import SanitizeExtension
+from .sanitize_md import SanitizeExtension
+from .docdb import query_doc_db
 import os
 
 app = Flask("AssistOnto")
@@ -40,7 +41,6 @@ app.config.update(
 if app.config.get("PROXY") is not None:
   # see https://flask.palletsprojects.com/en/3.0.x/deploying/proxy_fix/
   app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-
 
 
 #### Database
@@ -436,17 +436,22 @@ def message_new():
     flash("No API key means we can't contact the assistant.", category='error')
     return "No API key configured", 500
   base_url = model.get('base_url')
-  client = openai.OpenAI(
+  ai_client = openai.OpenAI(
     api_key=api_key,
     base_url=base_url
   )
+  [related_docs] = query_doc_db(app.config.get("DOCDB_PATH"), [user_message])
   ontology = request.form.get('user-ontology', None)
   ontology_message = f"The current ontology is:\n{ontology}" if ontology else ""
+  rag_message = f"The following documents may also be useful in helping the user:\n{related_docs}"
   messages = [
     dict(
       role="system",
-      content=f"""You are helpful assistant in the domain of cybersecurity ontologies. You should help the user build and query their ontology. {ontology_message}"""
-      )
+      content=f"""You are helpful assistant in the domain of cybersecurity ontologies. You should help the user build and query their ontology.
+{ontology_message}
+{rag_message}
+"""
+    )
   ]
   context_size = int(context_size_str) if (context_size_str := request.form.get('context_size')) is not None \
     and context_size_str.isdigit() else USER_DEFAULT_CONTEXT_SIZE
@@ -467,7 +472,7 @@ def message_new():
     if curr_msg['user_msg'] != prev_msg['user_msg']
   ])
   try:
-    response = client.chat.completions.create(
+    response = ai_client.chat.completions.create(
       model=model.get('name', chosen_model),
       messages=messages,
       max_tokens=2000
@@ -538,7 +543,7 @@ def page_not_found(e):
   # note that we set the 404 status explicitly
   return render_template('error.html', what="Page not found"), 404
 
-def start_webapp(host=None, port=None, debug_mode=None, db_path=None):
+def start_webapp(host=None, port=None, debug_mode=None, db_path=None, docdb_path=None):
   global DATABASE
   if host is None:
     host = 'localhost'
@@ -550,4 +555,6 @@ def start_webapp(host=None, port=None, debug_mode=None, db_path=None):
     debug_mode = True
   if db_path is not None:
     app.config['DB_PATH'] = db_path
+  if docdb_path is not None:
+    app.config['DOCDB_PATH'] = docdb_path
   return app.run(host=host, port=port, debug=debug_mode)
