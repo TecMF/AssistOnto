@@ -67,6 +67,11 @@ body {
     margin-right: 1em;
 }
 
+.vmargin {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
 #userInput {
     width: 90%;
     max-height: var(--chat-input-height);
@@ -353,4 +358,10 @@ pre {
 
 .inline-block {
     display: inline-block;
+}
+
+.framed {
+    border: 2px solid var(--input-border);
+    border-radius: 4px;
+    margin: 0.5em;
 }

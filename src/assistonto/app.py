@@ -91,6 +91,7 @@ def user_config(new=None):
       or next(iter(models)) if models else None,
     "models": models,
     "context_size": USER_DEFAULT_CONTEXT_SIZE,
+    "interpret_imports": False,
   }
   if new is None:
     return config
@@ -254,6 +255,10 @@ def post_settings():
     ok = False
   else:
     config['context_size'] = int(context_size_str)
+  if (interpret_imports := request.form.get('interpret_imports')) is None:
+    ok = False
+  else:
+    config['interpret_imports'] = True
   user_id = g._user_id
   # all config values are ok
   if not ok:
@@ -503,12 +508,15 @@ class NotAuthorized(Exception):
 def check_ontology():
   g = rdflib.Graph()
   ontology_str = request.form.get('user-ontology', None)
+  interpret_imports = request.form.get('interpret_imports', None)
   if ontology_str is None:
     return '', 204
   try:
     g.parse(data=ontology_str)
   except rdflib.exceptions.ParserError as e:
     return render_template('owl-reasoner-results.html', inconsistencies=[e.msg])
+  if interpret_imports is not None:
+    owlrl.interpret_owl_imports('turtle', g)
   owlrl.DeductiveClosure(owlrl.OWLRL_Semantics).expand(g)
   query = """
   prefix ns1: <http://www.daml.org/2002/03/agents/agent-ont#>

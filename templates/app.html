@@ -16,7 +16,7 @@
       <button id="reasonerButton"
               class="button"
               hx-post="{{url_for('check_ontology')}}"
-              hx-include="#ontology"
+              hx-include="#ontology, #settings"
               hx-target="#ontology-inconsistencies"
               hx-swap="innerHTML"
               >Check</button>
