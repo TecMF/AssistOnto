@@ -1,16 +1,17 @@
 {% macro settings(config, hide) -%}
 <div id="settings-modal" class="modal invisible" _="on closeModal add .closing then wait for animationend then hide me with visibility">
   <div class="modal-underlay" _="on click trigger closeModal"></div>
-  <div class="modal-content">
+  <div class="modal-content overflow-y">
     <h1>Settings</h1>
     {% set other_models = config.models %}
     {% set chosen_model = config.chosen_model %}
     {% set context_size = config.context_size %}
     {% set interpret_imports = config.interpret_imports %}
+    {% set rag = config.rag %}
     <form id='settings' name="settings" class="sm-padding" hx-post="{{url_for('post_settings')}}" hx-swap="none">
       <fieldset class="framed">
         <legend class="font-semibold">LLM</legend>
-        <div>
+        <div class="md-padding">
           <label>Model:</label>
           <select name="model" id="model-select">
             {% for model in other_models %}
@@ -18,14 +19,28 @@
             {% endfor %}
           </select>
         </div>
-        <div>
+        <div class="md-padding">
           <label for="context_size">Context size (0-10 messages):</label>
           <input type="number" id="context_size" name="context_size" min="0" max="10" value="{{context_size}}"/>
+          <p class="font-sm">How many previous user messages are sent to the LLM as context.</p>
+        </div>
+      </fieldset>
+      <fieldset class="framed">
+        <legend class="font-semibold">RAG</legend>
+        <div class="md-padding">
+          <label for="rag">Perform RAG:</label>
+          <input type="checkbox" id="rag" name="rag" {% if rag %}checked{% endif %}/>
+        </div>
+        <div class="md-padding">
+          <label>Corpus:</label>
+          <select name="rag_corpus" id="rag_corpus">
+            <option selected="" value="CAPEC">CAPEC</option>
+          </select>
         </div>
       </fieldset>
       <fieldset class="framed">
         <legend class="font-semibold">Ontology</legend>
-        <div>
+        <div class="md-padding">
           <input type="checkbox" id="interpret_imports" name="interpret_imports" {% if interpret_imports %}checked{% endif %}/>
           <label for="scales">Interpret OWL imports</label>
           <p class="font-sm">Do note that any imports must be in Turtle format.

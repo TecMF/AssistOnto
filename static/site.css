@@ -32,9 +32,12 @@ body {
     margin-inline: 1em;
 }
 
+.overflow-y {
+    overflow-y: auto;
+}
+
 #messages {
     margin-inline: 1em;
-    overflow-y: scroll;
     height: calc(95vh - 7em);
 }
 
@@ -106,6 +109,10 @@ textarea {
 
 .sm-padding {
     padding: 0.2em 0.55em;
+}
+
+.md-padding {
+    padding: 0.4em 0.65em;
 }
 
 .flex-row {

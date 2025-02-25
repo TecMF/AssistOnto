@@ -92,6 +92,7 @@ def user_config(new=None):
     "models": models,
     "context_size": USER_DEFAULT_CONTEXT_SIZE,
     "interpret_imports": False,
+    "rag": False,
   }
   if new is None:
     return config
@@ -259,6 +260,10 @@ def post_settings():
     config['interpret_imports'] = False
   else:
     config['interpret_imports'] = True
+  if (rag := request.form.get('rag')) is None:
+    config['rag'] = False
+  else:
+    config['rag'] = True
   user_id = g._user_id
   # all config values are ok
   if not ok:
@@ -444,17 +449,20 @@ def message_new():
     api_key=api_key,
     base_url=base_url
   )
-  [related_docs] = query_doc_db(app.config.get("DOCDB_PATH"), [user_message])
+  do_rag = request.form.get('rag', False)
+  if do_rag:
+    [related_docs] = query_doc_db(app.config.get("DOCDB_PATH"), [user_message])
   ontology = request.form.get('user-ontology', None)
   ontology_message = f"The current ontology is:\n{ontology}" if ontology else ""
-  rag_message = f"The following documents may also be useful in helping the user:\n{related_docs}"
-  messages = [
-    dict(
-      role="system",
-      content=f"""You are helpful assistant in the domain of cybersecurity ontologies. You should help the user build and query their ontology.
+  rag_message = f"The following documents may also be useful in helping the user:\n{'\n\n'.join(related_docs)}" if do_rag else ""
+  system_message = f"""You are helpful assistant in the domain of cybersecurity ontologies. You should help the user build and query their ontology.
 {ontology_message}
 {rag_message}
 """
+  messages = [
+    dict(
+      role="system",
+      content=system_message
     )
   ]
   context_size = int(context_size_str) if (context_size_str := request.form.get('context_size')) is not None \
