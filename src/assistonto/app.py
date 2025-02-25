@@ -256,11 +256,11 @@ def post_settings():
     ok = False
   else:
     config['context_size'] = int(context_size_str)
-  if (interpret_imports := request.form.get('interpret_imports')) is None:
+  if request.form.get('interpret_imports') is None:
     config['interpret_imports'] = False
   else:
     config['interpret_imports'] = True
-  if (rag := request.form.get('rag')) is None:
+  if request.form.get('rag') is None:
     config['rag'] = False
   else:
     config['rag'] = True
