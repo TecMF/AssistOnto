@@ -256,7 +256,7 @@ def post_settings():
   else:
     config['context_size'] = int(context_size_str)
   if (interpret_imports := request.form.get('interpret_imports')) is None:
-    ok = False
+    config['interpret_imports'] = False
   else:
     config['interpret_imports'] = True
   user_id = g._user_id
@@ -267,9 +267,8 @@ def post_settings():
   db = get_db()
   r = db_query_db(
       db,
-      """INSERT INTO settings(user_id, config_json)
+      """INSERT OR REPLACE INTO settings(user_id, config_json)
       VALUES (:user_id, :config_json)
-      ON CONFLICT(user_id) DO UPDATE SET config_json=excluded.config_json
       RETURNING user_id""",
       dict(user_id=user_id, config_json=json.dumps(config)),
       one = True
@@ -460,11 +459,13 @@ def message_new():
   ]
   context_size = int(context_size_str) if (context_size_str := request.form.get('context_size')) is not None \
     and context_size_str.isdigit() else USER_DEFAULT_CONTEXT_SIZE
+  # change context size because we count the current message and assistant messages
+  context_messages = chat_get_context(chat_id, ncontext=2*context_size + 1, db=db)
   context_messages = it.dropwhile(
     # remove initial assistant messages since we have to start with
     # user interactions
     lambda m: m['user_msg'] == 0,
-    chat_get_context(chat_id, ncontext=context_size, db=db)
+    context_messages,
   )
   # add context messages without repeated messages (we must have
   # messages following the user/assistant/user order)
