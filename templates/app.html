@@ -22,9 +22,9 @@
               >Check</button>
     </div>
     <div id="ai-chat" class="flex-column stacked">
-      <div id="messages" class="flex-column">
+      <div id="messages" class="flex-column overflow-y">
         {% for msg in chat_messages %}
-        {{ message(msg.id, 'user' if msg.user_msg else 'assistant', msg.content, 'AI' if not msg.user_msg else None) }}
+        {{ message(msg.id, 'user' if msg.user_msg else 'assistant', msg.content, 'AI' if not msg.user_msg else None, None) }}
         {% endfor %}
       </div>
       <div id="ai-input" class="flex-row">

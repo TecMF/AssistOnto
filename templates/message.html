@@ -1,4 +1,4 @@
-{% macro message(message_id, role, content, name) -%}
+{% macro message(message_id, role, content, name, system_message) -%}
 <div data-role="{{role}}">
   {% if name is not none %}
   <div class="font-semibold">{{name}}</div>
@@ -8,9 +8,19 @@
     {% if role == 'assistant' %}
     <li>
       <details>
-        <summary class='nobullet'>(source)</summary>
+        <summary class="nobullet sm-padding">(source)</summary>
         <pre>
           {{content}}
+        </pre>
+      </details>
+    </li>
+    {% endif %}
+    {% if system_message is not none %}
+    <li>
+      <details>
+        <summary class="nobullet sm-padding">(system)</summary>
+        <pre>
+          {{system_message}}
         </pre>
       </details>
     </li>

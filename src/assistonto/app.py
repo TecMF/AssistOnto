@@ -499,6 +499,7 @@ def message_new():
       ainame=chosen_model,
       assistant_message=assistant_message,
       assistant_message_id=assistant_message_id,
+      system_message=system_message,
     )
   except openai.AuthenticationError:
     app.logger.error(f'Could not authenticate with key {api_key[:5]}… to {base_url} (model={model})')
