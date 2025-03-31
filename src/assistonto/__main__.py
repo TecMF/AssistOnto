@@ -1,4 +1,4 @@
-from .app import start_webapp
+from .app import start_webapp, markdown_to_html
 from .docdb import go_doc_db
 import argparse
 import sys
@@ -11,6 +11,11 @@ def cli_start_webapp(args):
     db_path=args.db_path,
     docdb_path=args.docdb_path,
   )
+
+def markdown_file_to_html(fp):
+  with open(fp) as f:
+    input_text = f.read()
+  return markdown_to_html(input_text)
 
 def main():
   # define parser for command line arguments
@@ -31,6 +36,10 @@ def main():
   parser_docs.add_argument("--query", metavar="TEXT", help="Text to query", action='append')
   parser_docs.add_argument("--reset-db", help="Reset database", action='store_true')
   parser_docs.set_defaults(func=lambda args: go_doc_db(docdb_path=args.docdb_path, doc_dir=args.add, queries=args.query, reset_db=args.reset_db))
+  # render markdown
+  parser_md = subparsers.add_parser('markdown', help="Render markdown document as HTML")
+  parser_md.add_argument("filepath", metavar="PATH", help="Path to markdown file", type=str)
+  parser_md.set_defaults(func=lambda args: markdown_file_to_html(args.filepath))
 
   # parse
   if len(sys.argv) <= 1:

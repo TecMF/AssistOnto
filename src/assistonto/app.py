@@ -78,7 +78,11 @@ HTML_WHITELIST = {
   'td': [], 'tr': [], 'th': [], 'table': [],
   'blockquote': [], 'em': [], 'strong': [], 'h1':[], 'h2':[], 'h3':[]
 }
-app.add_template_global(lambda text: md.markdown(text, extensions=['fenced_code', 'tables', SanitizeExtension(HTML_WHITELIST)]), name='sane_markdown')
+
+def markdown_to_html(text):
+  return md.markdown(text, extensions=[SanitizeExtension(HTML_WHITELIST), 'fenced_code', 'tables', 'sane_lists'])
+
+app.add_template_global(markdown_to_html, name='sane_markdown')
 
 #### User configuration
 
