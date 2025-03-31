@@ -1,0 +1,14 @@
+@prefix : <http://www.example.org/myontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix capec: <https://www.inf.puc-rio.br/~bclaro/misc/caprica-capec.ttl> .
+
+
+# Define this ontology
+<http://example.org/myontology> a owl:Ontology ;
+    owl:imports <https://www.inf.puc-rio.br/~bclaro/misc/caprica-capec.ttl> .
+
+capec:AttackPattern owl:disjointWith capec:Skill .
+
+capec:CAPEC-1 a capec:Skill .
