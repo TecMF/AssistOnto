@@ -1,0 +1,7 @@
+SELECT ?property ?domain ?range ?subject ?object
+WHERE {
+    BIND(<http://example.org/propertyName> AS ?property)
+    OPTIONAL { ?property rdfs:domain ?domain . }
+    OPTIONAL { ?property rdfs:range ?range . }
+    OPTIONAL { ?subject ?property ?object . }
+}

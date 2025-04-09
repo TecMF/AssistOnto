@@ -1,0 +1,6 @@
+SELECT ?property
+WHERE {
+    ?property a rdf:Property .
+    FILTER NOT EXISTS { ?property rdfs:domain ?domain . }
+    FILTER NOT EXISTS { ?property rdfs:range ?range . }
+}

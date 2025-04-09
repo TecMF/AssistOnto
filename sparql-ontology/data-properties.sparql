@@ -1,0 +1,6 @@
+SELECT DISTINCT ?property ?subject ?value
+WHERE {
+    ?property a owl:DatatypeProperty .
+    ?subject ?property ?value .
+    FILTER(isLiteral(?value))
+}

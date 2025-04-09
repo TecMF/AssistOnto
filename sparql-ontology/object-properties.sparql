@@ -1,0 +1,5 @@
+SELECT DISTINCT ?property ?subject ?object
+WHERE {
+    ?property a owl:ObjectProperty .
+    ?subject ?property ?object .
+}

@@ -1,0 +1,6 @@
+SELECT ?property ?domain ?range
+WHERE {
+    ?property a rdf:Property .
+    OPTIONAL { ?property rdfs:domain ?domain . }
+    OPTIONAL { ?property rdfs:range ?range . }
+}

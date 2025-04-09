@@ -1,0 +1,4 @@
+SELECT DISTINCT ?property ?subject ?object
+WHERE {
+    ?subject ?property ?object .
+}
