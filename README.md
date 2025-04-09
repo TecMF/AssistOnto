@@ -23,9 +23,8 @@ environment variable.
 
 Build container image and transfer it to server:
 
-    rm -r assistonto/__pycache__/
-    podman build -t assistonto .
-    podman save localhost/assistonto | bzip2 | ssh vm-assistonto docker load
+    make build
+    make deploy
 
 Then delete old container, and run the new one:
 

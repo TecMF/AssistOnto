@@ -1,4 +1,4 @@
-# to test locally: podman run --rm -it --name assistonto_server -p 8080:8080 --env-file assistonto.env -v ~/sites/assistonto/assistonto.db:/opt/assistonto/assistonto.db:Z -v ~/sites/assistonto/assistonto_docs.db:/opt/assistonto/assistonto_docs.db:Z -v ~/secrets/openai.key:/opt/assistonto/openai.key:Z localhost/assistonto
+# to test locally: podman run --rm -it --name assistonto_server -p 8080:8080 --env-file assistonto.env -v ~/sites/assistonto/assistonto.db:/opt/assistonto/assistonto.db:Z -v ~/sites/assistonto/capec_docs.db:/opt/assistonto/assistonto_docs.db:Z -v ~/me/secrets/openai.key:/opt/assistonto/openai.key:Z localhost/assistonto
 
 FROM python:3
 

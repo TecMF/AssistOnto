@@ -46,6 +46,9 @@ CREATE TABLE invites (
   redeemed INTEGER
 ) STRICT;
 
+--- create invite with
+-- INSERT INTO invites(secret, created) VALUES (lower(hex(randomblob(32))), unixepoch()) RETURNING secret;
+
 DROP TABLE IF EXISTS settings;
 CREATE TABLE settings (
   user_id INTEGER PRIMARY KEY,
@@ -53,6 +56,3 @@ CREATE TABLE settings (
   FOREIGN KEY(user_id)
     REFERENCES users(id)
 ) STRICT;
-
---- create invite with
--- INSERT INTO invites(secret, created) VALUES (lower(hex(randomblob(32))), unixepoch()) RETURNING secret;
